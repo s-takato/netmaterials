@@ -93,15 +93,6 @@
     <tr><td align="center" width="80"></td></tr>
 </table></br>
 
-<!-- chap1 -->
-<table border="1" height="30">
-    <tr><th colspan="2" align="left"><font size="5">&emsp;nozawa chap1</font></th></tr>
-    <tr><td rowspan="20"><a href="chap1/fukusowa2.png"><img src="chap1/fukusowa2.png" alt=PNG width="240"></a></td></tr>
-    <tr><td align="center" width="80"><a href="offline/fukusowa2jsoffL.html">html</a></td></tr>
-    <tr><td align="center" width="80"><a href="chap1/fukusowa2.cdy">cdy</a></td></tr>
-    <tr><td align="center" width="80"></td></tr>
-</table></br>
-
 <!-- okazaki -->
 <table border="1" height="30">
     <tr><th colspan="2" align="left"><font size="5">&emsp;okazaki</font></th></tr>
