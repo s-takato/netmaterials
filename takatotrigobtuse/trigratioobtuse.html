@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    
+    <title>trigratioobtuse.cdy</title>
+    <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #CSConsole {
+            background-color: #FAFAFA;
+            border-top: 1px solid #333333;
+            bottom: 0px;
+            height: 200px;
+            overflow-y: scroll;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cindyjs.org/dist/v0.8/CindyJS.css">
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/Cindy.js"></script>
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/KetCindyPlugin.js"></script>
+<script id="csinit" type="text/x-cindyscript">
+use("KetCindyPlugin");
+Dircdy=loaddirectory;
+setdirectory(gethome());
+import("ketcindy.ini");
+
+Setdirectory(Dircdy);
+import("libfornet.txt");
+import("libutility.txt");
+import("libtrigratioobtuse.txt");
+import("libstudents.txt");
+
+Poshd=[-7.7,4.5];
+Msghd=[];
+
+alpha=pi/40;
+cs1=cos(alpha); sn1=sin(alpha);
+cs2=cos(2*alpha); sn2=sin(2*alpha);
+csL=[[cs2,-sn2],[cs1,-sn1],[1,0],[cs1,sn1],[cs2,sn2]];
+
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+scorectr=0;
+recordflg=0;
+recordfin=0;
+
+ch=10;
+</script>
+<script id="cskeytyped" type="text/x-cindyscript">
+if(key()=="?" % keydownlist()==[32],
+  if(!isreal(NumTyped),NumTyped=0);
+  if(NumTyped==0,
+    DispStr=
+     "Figure(1) Parent(2) Parapara(3) Movie(4) Surf(5)";
+  );
+  if(NumTyped==1,
+    DispStr=
+     "Shift+ Title(T) Para(P) Slide(S) Digest(D)";
+  );
+  if(NumTyped==2,
+    DispStr="Shift+ Meshlab(M)";
+  );
+  if(NumTyped==3,
+    DispStr=
+     "Ch : disp(0) chg(9) N(+,-) add(<) rmv(>)";
+  );
+  drawtext(mouse().xy,DispStr,size->24);
+  NumTyped=mod(NumTyped+1,4);
+,
+  NumTyped=0;  
+);
+if(key()=="1",//Mkfigure
+  Viewtex();
+  kc();
+);
+if(key()=="2",//Mkparent
+  Viewparent();
+);
+if(key()=="3",//Flipbook(Parapara)
+  Flipbook();
+);
+if(key()=="4",//Texmovie
+  Texmovie();
+  kc();
+);
+if(key()=="5",//Surface
+  Cheader();
+  Cmain();
+  kcC();
+  if(ChNum>0,
+    Ch=[ChNum];
+  ,
+    Ch=[1];
+  );
+  ChNum=0;
+);
+if(key()=="T",//Title
+  Maketitle();
+);
+if(key()=="P",//ParaF
+  Parafolder();
+);
+if(key()=="S",//Slide 
+  Mkslides();
+);
+if(key()=="D",//Digest(Summary)
+  Mkslidesummary();
+);
+if(key()=="M",//Meshlab
+  Mkviewobj(OCNAME,OBJCMD,OCOPTION);
+);
+
+if(key()=="0",
+  Dispchoice();
+);
+if(key()=="9",
+  if(length(Ch)==0,
+    Ch=[ChNum];
+  ,
+    if(!contains(Ch,ChNum),
+      Ch=append(Ch,ChNum);
+      ChNum=Ch_(length(Ch)-1);
+      Ch=remove(Ch,[ChNum]);
+      Ch=sort(Ch);
+    );
+  );
+  Dispchoice();
+);
+if(key()=="+",
+  ChNum=ChNum+1;
+  Dispchoice();
+);
+if(key()=="-",
+  ChNum=ChNum-1;
+  Dispchoice();
+);
+if(key()=="<",
+  if(length(select(Ch,#==ChNum))==0,
+    Ch=append(Ch,ChNum);
+    Ch=sort(Ch);
+    ChNum=ChNum+1;
+  );
+  Dispchoice();
+);
+if(key()=="^",
+  if(length(Ch)==0,
+    Ch=[ChNum];
+  ,
+    if(!contains(Ch,ChNum),
+      Ch=Ch_(1..(length(Ch)-1));
+      Ch=append(Ch,ChNum);
+      Ch=sort(Ch);
+    );
+  );
+  ChNum=ChNum+1;
+  Dispchoice();
+);
+if(key()=="~",
+  if(length(Ch)==0,
+    Ch=[ChNum];
+  ,
+    if(!contains(Ch,ChNum),
+      Ch=Ch_(1..(length(Ch)-1));
+      Ch=append(Ch,ChNum);
+      Ch=sort(Ch);
+    );
+  );
+  ChNum=max(ChNum-1,1);
+  Dispchoice();
+);
+if(key()==">",
+  if(length(Ch)>0,
+    ChNum=Ch_(length(Ch));
+    Ch=Remove(Ch,[ChNum]);
+  );
+  Dispchoice();
+);
+;
+</script>
+<script id="csdraw" type="text/x-cindyscript">
+Ketinit();
+
+Setketcindyjs(["Grid=0.5"]); //no ketjs
+Ketcindyjsmain(["<pf8/fp>鈍角等の三角比"]); //no ketjs
+
+Setwindow([-5,1],[-1,5]);
+Addax(1);
+
+if(newflg==1,
+  flg=1;
+  start=Counttime();
+  st=Textedit(9,"noname"); ///////
+//  st=Textedit(9,"0");
+  out=Confirmstudent(st,Students);
+  flg=out_1;
+  Msghd=[out_2,Poshd,20];
+  Msgsc=[];
+  if(flg==0,
+    Startlearning(st);
+    Putpoint("A",[0,0]);
+    Student=out_3;
+    Subsedit(9,"ID="+Student);
+    quesnew=1;
+    newflg=0;
+  ,
+    quesfin=0;
+  );
+);
+
+if(quesflg==1,
+  if(quesnew==1,
+    Makeques();
+    Startquestion(Ex,Ca);
+    Msghd=["("+text(QuesNo)+")",Poshd,20];
+    Msgsc=[];
+    quesgiven=1;
+    quesnew=0;
+    scorectr=1;
+    recordfin=0;
+  );
+  quesflg=0;
+);
+
+if(quesgiven==1,
+  Putoncurve("A",cr1);
+  Drawfig();
+);
+
+if(scoreflg==1,
+  if(scorectr>0,
+    tmp=Scoring();
+    Makequesdata(tmp_1,tmp_2,scorectr);
+    scorectr=scorectr+1;
+    quesnew=1;
+  );
+  scoreflg=0;
+);
+
+if(recordflg==1,
+  if(recordfin==0,
+    Updatelog();
+    Subsedit(100,LogData);
+//    scorectr=0;
+//    recordfin=1;
+    quesnew=1;
+  );
+  recordflg=0;
+);
+
+if(funflg==1,
+  Inputwin(ch,name);
+  funflg=0;
+);
+
+Drwaxes();
+
+pos=1.7;dpos=0.7*0.5*(14-ch);
+Framedata("1",[[-5.4,pos+dpos],0.1,0.1],["nodisp","Msg=n"]);
+Shade(["fr1"],["Color=blue"]);
+
+Dispinitial();
+Displetters(Msghd);
+Displetters(Msgsc);
+
+tmp=Textedit(ch,"");
+tmp=Addasterisk(tmp);
+str=Totexform(tmp);
+Drwexpr([2.1,3],str,30);  
+
+Windispg();
+
+;
+</script>
+    <script type="text/javascript">
+var cdy = CindyJS({
+  scripts: "cs*",
+  defaultAppearance: {
+    dimDependent: 0.7,
+    fontFamily: "sans-serif",
+    lineSize: 1,
+    pointSize: 5.0,
+    textsize: 12.0
+  },
+  angleUnit: "°",
+  geometry: [
+    {name: "SW", type: "Free", pos: [4.0, 0.8, -0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "NE", type: "Free", pos: [-0.8, -4.0, -0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "Text100", type: "EditableText", pos: [4.0, 0.7571982755268546, -0.5222391915674925], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 18.0},
+    {name: "Text9", type: "EditableText", pos: [4.0, -2.5808319271509754, -0.5130458089683372], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
+    {name: "Text14", type: "EditableText", pos: [4.0, -0.9136536096185308, -0.5669514992816478], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 100, textsize: 18.0},
+    {name: "A", type: "Free", pos: [0.0, -0.0, 4.0], color: [1.0, 0.0, 0.0], labeled: true, size: 5.5},
+    {name: "Text10", type: "EditableText", pos: [4.0, -1.6886182212763807, -0.5676858349059386], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 100, text: ",", textsize: 18.0},
+    {name: "Text12", type: "EditableText", pos: [4.0, -1.2977691806691818, -0.5647536697436952], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 100, textsize: 18.0},
+    {name: "Text1", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.286, 0.286], fillalpha: 0.27272728085517883, script: "Viewtex();\nkc();", text: "Figure", textsize: 18.0, dock: {corner: "UL", offset: [10.0, -20.0]}},
+    {name: "Text2", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 0.27272728085517883, script: "if(length(Shellparent)>0,\n  Makeshell(),Makebat();\n);\nif(indexof(Libname,\"sci\")>0,\n  writetosci(2),writetoRS(2)\n);\nkc();", text: "Parent", textsize: 18.0, dock: {corner: "UL", offset: [77.0, -20.0]}},
+    {name: "Text3", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.929, 0.6], fillalpha: 0.27272728085517883, script: "Parafolder();", text: "ParaF", textsize: 18.0, dock: {corner: "UL", offset: [295.0, -20.0]}},
+    {name: "Text4", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.51, 0.949, 1.0], fillalpha: 0.27272728085517883, script: "Mkanimation();", text: "Anime", textsize: 18.0, dock: {corner: "UL", offset: [355.0, -20.0]}},
+    {name: "Text5", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 0.0, 1.0], fillalpha: 0.27272728085517883, script: "Mkflipanime();", text: "Flip", textsize: 18.0, dock: {corner: "UL", offset: [423.0, -20.0]}},
+    {name: "Text21", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.5726495726495726, script: "Mkketcindyjs(append(KETJSOP,\"Web=y\"));", text: "Ketjson", textsize: 18.0, dock: {corner: "UL", offset: [144.0, -20.0]}},
+    {name: "Text22", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.4358974358974359, script: "Mkketcindyjs(append(KETJSOP,\"Web=n\"));", text: "Ketjsoff", textsize: 18.0, dock: {corner: "UL", offset: [218.0, -20.0]}},
+    {name: "Text31", type: "Button", pos: [4.0, -2.9027004806717045, -0.6444323902873509], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "quesflg=1;", text: "出題", textsize: 18.0},
+    {name: "Text32", type: "Button", pos: [4.0, 0.21049330788257042, -0.5939831637090147], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "scoreflg=1;", text: "採点", textsize: 18.0},
+    {name: "Text33", type: "Button", pos: [4.0, 0.3261202538920698, -0.49896842077484377], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "recordflg=1;", text: "記録", textsize: 18.0},
+    {name: "Text40", type: "Button", pos: [4.0, 0.8815818039464817, 3.426836523307732], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n0\";\n", text: "0", textsize: 24.0},
+    {name: "Text41", type: "Button", pos: [4.0, 3.1707317073170733, 3.5285264766934903], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n1\";\n", text: "1", textsize: 24.0},
+    {name: "Text43", type: "Button", pos: [4.0, 1.8741258741258742, 2.023350846775288], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"n3\";\n", text: "3", textsize: 24.0},
+    {name: "Text42", type: "Button", pos: [4.0, 2.392857142857143, 2.583385456150591], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n2\";\n", text: "2", textsize: 24.0},
+    {name: "Text50", type: "Button", pos: [4.0, 0.7857142857142857, 2.583385456150591], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\".\";\n", text: ".", textsize: 24.0},
+    {name: "Text44", type: "Button", pos: [-2.9909909909909906, -4.0, -2.6066591989987944], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n4\";\n", text: "4", textsize: 24.0},
+    {name: "Text46", type: "Button", pos: [4.0, 3.160839160839161, 2.023350846775288], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n6\";\n", text: "6", textsize: 24.0},
+    {name: "Text45", type: "Button", pos: [-3.9649122807017543, -4.0, -2.5380629042883], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n5\";\n", text: "5", textsize: 24.0},
+    {name: "Text51", type: "Button", pos: [4.0, 2.0264317180616738, 1.2746218990698952], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\",\";", text: ",", textsize: 24.0},
+    {name: "Text47", type: "Button", pos: [-2.1146496815286624, -4.0, -1.842924656616982], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n7\";\n", text: "7", textsize: 24.0},
+    {name: "Text49", type: "Button", pos: [-3.6962025316455693, -4.0, -1.8312605765118113], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n9\";\n", text: "9", textsize: 24.0},
+    {name: "Text48", type: "Button", pos: [-2.8607594936708862, -4.0, -1.8312605765118113], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, script: "funflg=1;\nname=\"n8\";\n", text: "8", textsize: 24.0},
+    {name: "Text52", type: "Button", pos: [4.0, 2.728813559322034, 1.2260134368172295], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"sq(\";\n", text: "sq", textsize: 24.0},
+    {name: "Text53", type: "Button", pos: [4.0, 3.22, 1.4466958554443308], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"fr(\";\n\n", text: "fr", textsize: 24.0},
+    {name: "Text55", type: "Button", pos: [4.0, 1.7952755905511808, 1.1391305948380557], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\")\";\n", text: ")", textsize: 24.0},
+    {name: "Text57", type: "Button", pos: [4.0, 3.701149425287356, 1.6628687993612996], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"N\";\n", text: "N", textsize: 24.0},
+    {name: "Text58", type: "Button", pos: [4.0, 0.6081871345029239, 1.6920419361922], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"/\";\n", text: "/", textsize: 24.0},
+    {name: "Text60", type: "Button", pos: [4.0, 0.6478873239436621, 2.037599796400466], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"-\";\n", text: "-", textsize: 24.0},
+    {name: "Text54", type: "Button", pos: [4.0, 1.6140350877192982, 1.6920419361922], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"*\";\n", text: "*", textsize: 24.0},
+    {name: "Text110", type: "Button", pos: [4.0, -2.2164719747907173, -0.735925964968644], color: [1.0, 1.0, 1.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, alpha: 0.17094017094017094, script: "ch=10;\n\n", text: "O", textsize: 14.0},
+    {name: "Text112", type: "Button", pos: [4.0, -1.7170848226653048, -0.7340718709664685], color: [1.0, 1.0, 1.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, alpha: 0.19658119658119658, script: "ch=12;\n", text: "O", textsize: 14.0},
+    {name: "Text114", type: "Button", pos: [4.0, -1.216268515291838, -0.735925964968644], color: [1.0, 1.0, 1.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, alpha: 0.18803418803418803, script: "ch=14;\n", text: "O", textsize: 14.0},
+    {name: "Text56", type: "Button", pos: [4.0, 2.635838150289017, 1.6724807577391108], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"+\";\n", text: "+", textsize: 24.0},
+    {name: "Text59", type: "Button", pos: [4.0, 2.2799999999999994, 1.4466958554443308], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.686, 0.686], fillalpha: 0.4444444444444444, text_fontfamily: "monospace", script: "funflg=1;\nname=\"(\";\n", text: "(", textsize: 24.0},
+    {name: "Text61", type: "Button", pos: [4.0, 1.494949494949495, 1.4613089448932637], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.0, 0.0], fillalpha: 0.5384615384615384, text_fontfamily: "monospace", script: "Delete();", text: "DL", textsize: 18.0},
+    {name: "Text63", type: "Button", pos: [4.0, 0.5226130653266332, 1.4539656838636492], color: [0.0, 0.0, 0.0], fillcolor: [0.0, 0.0, 1.0], fillalpha: 0.29914529914529914, text_fontfamily: "monospace", script: "if(ch==14,ch=10,ch=ch+2);", text: "▼", textsize: 24.0}
+  ],
+  ports: [{
+    id: "CSCanvas",
+    width: 945,
+    height: 544,
+    transform: [{visibleRect: [-8.301675818592367, 5.979142034206825, 4.7625767185763035, -1.5414435533273088]}],
+    axes: true,
+    grid: 0.5,
+    background: "rgb(168,176,192)"
+  }],
+  csconsole: false,
+  cinderella: {build: 2006, version: [3, 0, 2006]}
+});
+    </script>
+</head>
+<body>
+    <div id="CSCanvas"></div>
+</body>
+</html>
