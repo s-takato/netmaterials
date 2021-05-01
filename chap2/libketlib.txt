@@ -1,0 +1,109 @@
+////Setting elements
+Seteditable(51,["ID=","Size=20","Width=150"]);// no ketjs on
+Seteditable(59,["","Size=16","Width=700"]);
+Seteditable(10,["","Size=18","Width=80"]);
+Seteditable(11,["","Size=18","Width=80"]);
+Seteditable(12,["","Size=18","Width=80"]);// no ketjs off
+
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"+-","-");
+  tmp=replace(tmp,"+0x^2","");
+  tmp=replace(tmp,"1x^2","x^2");
+  tmp=replace(tmp,"+0x","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"+1x","+x");
+  tmp=replace(tmp,"+0","");
+  tfrm=Totexform(tmp);
+  tfrm;
+);
+
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"+-","-");
+  tmp=replace(tmp,"+0x^2","");
+  tmp=replace(tmp,"1x^2","x^2");
+  tmp=replace(tmp,"+0x","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"+1x","+x");
+  tmp=replace(tmp,"+0","");
+  tfrm=Totexform(tmp);
+  tfrm;
+);
+
+Makeques():=(
+  regional(a1,a2,a3,b,c,d,eq1,
+      flg,frm,cfrm,tmp,pQ);
+  // global Ex,Ca, Scorectr
+  pQ=[-9,3.8];
+  a1=0; a2=0; a3=0;
+  frm="";
+  a1=4-randomint(8);
+  a2=4-randomint(8);
+  a3=4-randomint(7);
+  b=-(a1+a2+a3);
+  c=a1*a2+a2*a3+a3*a1;
+  d=-a1*a2*a3;
+  eq1=Assign("x^3+b*x^2+c*x+d=0",["b",b,"c",c,"d",d]);
+  frm=Assign("x^3+b*x^2+c*x+d=0",
+       ["b",text(b),"c",text(c),"d",text(d)]);
+  cfrm=Tocindyform(frm);
+  Subsedit(10,"");
+  Subsedit(11,"");
+  Subsedit(12,"");
+  tfrm=Deformtex(frm);
+  Msgques=[
+    ["("+text(QuesNo+1)+") "+"$"+tfrm+"$",pQ,20],
+    ["解$x$は",pQ+[0.2,-1],20]
+  ];
+  Msghint=[];
+  Msgsc=[];
+  Scorectr=1;
+  quesgiven=1;
+  quesnew=0;
+  tipsflag=0;
+  Ex=cfrm;
+  tmp=sort([a1,a2,a3]);
+  Ca=text(tmp);
+//  [Ex,Ca];
+);
+
+Scoring():=(
+  regional(st,tmp,tmp1,tmp2,tmp3);
+  // global Stans,Score
+  tmp1=Textedit(10,"");
+  tmp2=Textedit(11,"");
+  tmp3=Textedit(12,"");
+  tmp=[tmp1,tmp2,tmp3];
+  Stans=text(tmp);
+  if(length(tmp1)*length(tmp2)*length(tmp3)>0,
+    st=apply(tmp,parse(#));
+    st=sort(st);
+    st=text(st);
+   	if(Ca==st,
+      Score=1;
+      Msgsc=["正解",pB,20];
+    ,
+      Score=0;
+      Msgsc=["不正解",pB,20];
+    );
+  ,
+    Score=-1;
+    Msgsc=["未入力",pB,20];
+  );
+//  [Stans,Score];
+);
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+Scorectr=0;
+recordflg=0;
+recordfin=0;
+
+frm="";
+cfrm="";
