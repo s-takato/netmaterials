@@ -269,41 +269,6 @@ Assign(funstr,varname,rep,precision):=(
   funstr=tmp2+funstr;
   funstr;
 );
-Putpoint(name,Pt):=Putpoint(name,Pt,Pt);
-Putpoint(name,Ptinit,Pt):=(
-  regional(ptstr); 
-    ptstr=name+".xy="+Textformat(Pcrd(Pt),10)+";";
-    parse(ptstr);
-    Ptpos(name,Pcrd([Pt_1,Pt_2])); //200529
-);
-Ptpos(pt):=Ptpos(pt,[]);
-Ptpos(ptorg,pos):=(
-  regional(pt,out,tmp);
-  if(ispoint(ptorg),pt=ptorg,pt=parse(ptorg));
-  if(length(pos)==0,
-    tmp=pt.name+"position";
-    out=parse(tmp);
-    if(!islist(out),
-      tmp=tmp+"="+Textformat(pt.xy,12)+";";  //200108 6->12
-      parse(tmp);
-    );
-  ,
-    pt.xy=pos;
-    tmp=pt.name+"position="+Textformat(pt.xy,12)+";"; //200108 6->12
-    parse(tmp);
-    out=pt.xy;
-  );
-  out;
-);
-Pcrd(pt):=(
-  regional(tmp);
-  if(ispoint(pt),
-    tmp=pt.xy;
-  ,
-    tmp=[pt_1*SCALEX,pt_2*SCALEY];
-  );
- re(tmp); //191231
-);
 Totexform(str):=( //190514
   regional(funL,f,out,plv,flg,nn,tmp,tmp1,tmp2);
   out=replace(str,"pi","\pi"); //190715
@@ -881,6 +846,15 @@ Measuredepth(list):=( //190423
   );
   nn;
 );
+Pcrd(pt):=(
+  regional(tmp);
+  if(ispoint(pt),
+    tmp=pt.xy;
+  ,
+    tmp=[pt_1*SCALEX,pt_2*SCALEY];
+  );
+ re(tmp); //191231
+);
 Getlinestyle(str,name):=(
   regional(noflg,tmp,tmp1,tmp2,Dop,Ltype,subflg);
   Ltype=-1;
@@ -1231,6 +1205,32 @@ Drwexpr(pos,str,sz,clr):=(
   regional(tmp);
   if(!isstring(str),tmp=text(str),tmp=str);
   drawtext(pos,"$"+tmp+"$",size->sz,color->clr);
+);
+Putpoint(name,Pt):=Putpoint(name,Pt,Pt);
+Putpoint(name,Ptinit,Pt):=(
+  regional(ptstr); 
+    ptstr=name+".xy="+Textformat(Pcrd(Pt),10)+";";
+    parse(ptstr);
+    Ptpos(name,Pcrd([Pt_1,Pt_2])); //200529
+);
+Ptpos(pt):=Ptpos(pt,[]);
+Ptpos(ptorg,pos):=(
+  regional(pt,out,tmp);
+  if(ispoint(ptorg),pt=ptorg,pt=parse(ptorg));
+  if(length(pos)==0,
+    tmp=pt.name+"position";
+    out=parse(tmp);
+    if(!islist(out),
+      tmp=tmp+"="+Textformat(pt.xy,12)+";";  //200108 6->12
+      parse(tmp);
+    );
+  ,
+    pt.xy=pos;
+    tmp=pt.name+"position="+Textformat(pt.xy,12)+";"; //200108 6->12
+    parse(tmp);
+    out=pt.xy;
+  );
+  out;
 );
 Ketinit():=Ketinit("fig",0.3); //190831from
 Ketinit(Arg):=(//181001from
@@ -2094,14 +2094,11 @@ Csvtext(fname):=(
 
 
 
-l1=1.3;l2=1;l3=-12;ds=4.5;dy=1;
-Msg0=[
-  ["標準形に変形",[l3,l1+l2],20],
-  ["頂点Tの座標は",[l3,l1+l2-dy],20]
-];
 
-Makeques():=(
-  regional(tmp,frm,flg,pt1,pt2);//一時的な変数
+l1=1.3;l2=1;l3=-12;ds=4.5;dy=1;
+
+Makeques():=( ////問題作成の命令．figureコンソールに条件を指定する
+  regional(tmp,frm,flg,pt1,pt2);//一時的なこの命令内の変数
   flg=1;
   while(flg==1,
     a1=0;
@@ -2114,7 +2111,7 @@ Makeques():=(
     c1=a1*p1*p1+q1;
     frm=Assign("a*x^2+b*x+c",
        ["a",text(a1),"b",text(b1),"c",text(c1)]); ////文字列だと括弧がない (1)でなく1となる
-    tmp=replace(frm,"1*","");
+    tmp=replace(frm,"1*",""); ////1*があるときは空白に置き換える
     tmp=replace(tmp,"+0*x","");
     tmp=replace(tmp,"+0","");
     frm=replace(tmp,"+-","-");
@@ -2132,9 +2129,12 @@ Makeques():=(
   Putpoint("T",[0,-6]);
   Putpoint("P3",[1,-6]);
   Putpoint("P4",[2,-6]);
-  pT=T.xy;
   Ex="y="+tfrm;
   Ca=text([p1,q1]);
+  Msg0=[ ////Msgメッセージ．figureコンソールの下にDispletterやDispExprsで表示させる
+    ["頂点を求めてTを移動する",[l3,l1+l2],20],
+    ["今のTの座標は",[l3,l1+l2-dy],20]
+  ];
 );
 
 Drawfig():=(
@@ -2165,7 +2165,7 @@ Scoring():=(
     if((|P1-f(P1.x)|<gosa2)&(|P2-f(P2.x)|<gosa2)&
        (|P3-f(P3.x)|<gosa2)&(|P4-f(P4.x)|<gosa2)&
        (P1.x<P2.x)&(P2.x<T.x)&(T.x<P3.x)&(P3.x<P4.x),
-      Msgsc=["正解",pB,20,[0,0,1]];score=2;
+      Msgsc=["正解!",pB,24,[0,0,1]];score=2;
     ,
       Msgsc=["グラフが違う",pB,20,[1,0,0]];score=1;
     );
@@ -2215,6 +2215,11 @@ Allclear():=(
   Subsedit(ch,"");
 );
 
+Putpoint("P1",[-2,-6]);
+Putpoint("P2",[-1,-6]);
+Putpoint("T",[0,-6]);
+Putpoint("P3",[1,-6]);
+Putpoint("P4",[2,-6]);
 
 newflg=1;
 quesflg=0;
@@ -2227,10 +2232,11 @@ recordfin=0;
 
 
 
+Msg0=[];
 Msgsc=[];
 Msghj=[];
 Msgfun=[];
-Msg1=[];
+Msg1=[];Msg2=[];
 graphflg=0;
 </script>
 <script id="csdraw" type="text/x-cindyscript">
@@ -2240,8 +2246,7 @@ Ketinit();
 if(newflg==1,
   flg=1;
   start=Counttime();
-  st=Textedit(51,"1");
-  
+  st=Textedit(51,"");
   if(length(st)>0,
     Startlearning(st);
     Msgfun=["出題ボタンを押して下さい",[-10,l1+l2+1.2],20,[0,0,0]];
@@ -2249,8 +2254,6 @@ if(newflg==1,
     newflg=0;
   ,
     Msgfun=["IDを入れて下さい",[-10,l1+l2+1.2],20,[0,0,0]];
-    quesnew=0;
-    quesfin=0;
   );
 );
 
@@ -2269,9 +2272,11 @@ if(quesflg==1,
   quesflg=0;
 );
 
-pT=Ptpos(T);
-tmp="("+text(pT_1)+", "+text(pT_2)+")";
-Msg1=[tmp,[-12+ds/4,l1-dy],28];
+
+if(quesgiven==1,
+  tmp="("+text(T.x)+", "+text(T.y)+")";
+  Msg1=[tmp,[-12+ds/4,l1-dy],28];
+);
 
 if(scoreflg==1,
   if(scorectr>0,
@@ -2296,14 +2301,16 @@ if(recordflg==1,
   recordflg=0;
 );
 
-Ospline("1",[P1,P2,T,P3,P4],["Msg=n"]);
+Ospline("1",[P1,P2,T,P3,P4]);
+Drwaxes();
 
 Displetters(Msg0);
 Displetters(Msg1);
+Displetters(Msg2);
 Displetters(Msgfun);
 Displetters(Msgsc);
 Displetters(Msghj);
-Drwaxes();
+
 Windispg();
 ;
 </script>
@@ -2336,8 +2343,8 @@ var cdy = CindyJS({
   ports: [{
     id: "CSCanvas",
     width: 919,
-    height: 444,
-    transform: [{visibleRect: [-13.240060454120117, 6.907217300314055, 13.829162142846263, -6.170840189406373]}],
+    height: 507,
+    transform: [{visibleRect: [-13.240060454120117, 6.907217300314055, 13.829162142846263, -8.02651050889373]}],
     grid: 0.5,
     snap: true,
     background: "rgb(247,247,247)"
