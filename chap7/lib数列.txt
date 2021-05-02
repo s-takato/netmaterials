@@ -5,214 +5,107 @@ Seteditable(3,["","Size=24","Width=65"]);//no ketjs
 Seteditable(7,["","Size=18","Width=550"]);//no ketjs
 Seteditable(8,["ID=","Size=24","Width=200"]);//no ketjs
 
-gcd(a,b):=
-if(b==0,   //再帰の終了条件
-  a,                 //最後にaを戻り値とする
-  if(b>a,            //bがaより大きければ
-    gcd(b,a),        //aとbを入れ替えて再帰
-    gcd(b,mod(a,b))  //そうでなければaをbで割った余りを用いて再帰
-  )
-);
+inspect(Text16,"colorfill",5);// no ketjs on
+inspect(Text16,"fillalpha",1);
+inspect(Text18,"colorfill",5);
+inspect(Text18,"fillalpha",1);
+inspect(Text19,"colorfill",5);
+inspect(Text19,"fillalpha",1); // no ketjs off
 
-divsbl(a,b,d):=(
-  regional(c);
-  if(b==0 % b==1,
-    0;
-  ,
-    c=floor(a/b);
-    if(a==b*c,
-      divsbl(c,b,d+1);
-    ,
-      d;
-    );
-  );
-);
-
-ansaseq(a,b):=(
-  regional(dtL,dt,st,k);
-  dtL=[];st="";
+Makeques():=(
+  regional(mmon,a1,a2,a11,a21,a31,dtL,p1,p2,p3,
+      tmp,tmp0.tmp1,tmp2);
+  //global Ex,Ca
+  p1=;[5.2,6]; p2=[-5,1.8]; p3=[-5,1.1];
   forall(1..4,k,
-    dt=a+k*b;
-    dtL=dtL++[dt];st=st+","+text(dt);
+    Subsedit(k-1,"");
   );
-  Strkai=substring(st,1,length(st));
-//  Startquestion("差"+text(a)+","+text(b),st)
-  dtL;
+  mmon=randomint(3);
+  if(mmon==0,
+    a1=randomint(9);//初項
+    a2=randomint(7);//公差
+    a1=a1+1;
+    a2=a2+1;
+    a11=randomint(5);
+    if(a11<2,a1=-a1);
+    a21=randomint(6);
+    if(a21<2,a2=-a2);
+    dtL=ansaseq(a1,a2);
+    tmp="初項 $a_1=a1$, 公差 $d=a2$ のとき，";
+    Msgmon=[
+      ["等差数列",p1,24],
+      [tmp,p2,24],
+      ["第5項まで求めよ．",p3,24]
+    ];
+  );
+  if(mmon==1,
+    a1=randomint(4);//初項
+    a2=randomint(5);//公比
+    a1=a1+1;
+    a2=a2+1;
+    a11=randomint(5);
+    if(a11<2,a1=-a1);
+    a21=randomint(6);
+    if(a21<2,a2=-a2);
+    dtL=ansgseq(a1,a2);
+    tmp=Assign(tmp,["a1",text(a1),"a2",text(a2)]);
+    Msgmon=[
+      ["等比数列",p1,24],
+      [tmp,p2,24],
+      ["第5項まで求めよ．",p3,24]
+    ];
+  );
+  if(mmon==2,
+    a1=randomint(5);//係数
+    a2=randomint(9);//定数項
+    a3=randomint(5);//初項
+    a1=a1+1;
+    a2=a2+1;
+    a3=a3+1;
+    a11=randomint(6);//係数の正の比率を2/3に
+    if(a11<2,a1=-a1);
+    a21=randomint(4);//定数項
+    if(a21<2,a2=-a2);
+    a31=randomint(6);//初項の正の比率を2/3に
+    if(a31<2,a3=-a3);
+    dtL=ansrseq(a1,a2,a3);
+    tmp0="初項 $a_1=a3$, ";
+    if(|a1|==1,
+      if(a1==1,
+        tmp1="$a_n=a_{n-1}";
+      ,
+        tmp1="$a_n=-a_{n-1}";
+      );
+    ,
+    tmp1="$a_n=a1 a_{n-1}";
+   );
+   if(a2>0,
+    tmp2="+ a2$";
+   ,
+    tmp2="a2$";
+   );
+   tmp=tmp0+tmp1+tmp2;
+   tmp=Assign(tmp,["a1",text(a1),"a2",text(a2),"a3",text(a3)]);
+    Msgmon=[
+      ["漸化式",pt,24],
+      ["次の漸化式で与えられる数列の第5項まで求めよ．",p2,24],
+      [tmp,p3,24]
+    ];
+  );
+  Ex="";
+  Ca=""
 );
 
-ansgseq(a,b):=(
-  regional(dtL,dt,st,k);
-  dtL=[];st="";
-  dt=a;
+Scoring():=(
+  regional(ansS,score);
+  ansS="";
   forall(1..4,k,
-    dt=dt*b;
-    dtL=dtL++[dt];st=st+","+text(dt);
+    ansS=ansS+ansL_k;
+    Subsedit(k-1,ansLs_k);
   );
-  Strkai=substring(st,1,length(st));
-//  Startquestion("比"+text(a)+","+text(b),st)
-  dtL;
+  Msgsc=[];
+  [ansS,score];
 );
 
-ansrseq(a,b,c):=(
-  regional(dtL,dt,st,k);
-  dtL=[];st="";
-  dt=c;
-  forall(1..4,k,
-    dt=a*dt+b;
-    dtL=dtL++[dt];st=st+","+text(dt);
-  );
-  Strkai=substring(st,1,length(st));
-//  Startquestion("漸"+text(a)+","+text(b)+","+text(c),st)
-  dtL;
-);
 
-straseq(a,b,pt):=(
-  regional(tmps1,tmps2,c);
-  if(a-b==0,
-    tmps1="";
-    if(b>0,
-      c=b;
-    ,
-      c=-b;
-      tmps1="-";
-    );
-  ,
-    tmps1=text(a-b);
-    if(b<0,
-      c=-b;
-      tmps1=tmps1+"-";
-    ,
-      c=b;
-      tmps1=tmps1+"+";
-    );
-  );
 
-  if(c==1,
-    tmps2="n";
-  ,
-    tmps2=Assign("c n",["c",text(c)]);
-  );
-
-  Letter(pt,"e","一般項 $a_n="+tmps1+tmps2+"$",["Size=2"]);
-);
-
-strgseq(a,b,pt):=(
-  regional(tmps1,tmps2,c,d);
-  d=divsbl(|a|,|b|,0);
-//  if(d>0,
-    c=round(a/b^d);
-//  ,
-//    c=a;
-//  );
-  if(c==1,
-    tmps="";
-  ,
-    if(c==-1,
-      tmps="-";
-    ,
-      tmps=text(c)+"\cdot ";
-    );
-  );
-  if(d==0,
-    if(b>0,
-      tmps=tmps+text(b)+"^{n-1}$";
-    ,
-      tmps=tmps+"("+text(b)+")^{n-1}$";
-    );
-  );
-  if(d==1,
-    if(b>0,
-      tmps=tmps+text(b)+"^{n}$";
-    ,
-      tmps=tmps+"("+text(b)+")^{n}$";
-    );
-  );
-  if(d>1,
-    if(b>0,
-      tmps=tmps+text(b)+"^{n+"+text(d-1)+"}$";
-    ,
-      tmps=tmps+"("+text(b)+")^{n+"+text(d-1)+"}$";
-    );
-  );
-  Letter(pt,"e","一般項 $a_n="+tmps,["Size=2"]);
-);
-
-strrseq(a,b,c,pt):=(
- regional(tmps,cda,cds,cka,cks,dnn,cA);
-
- if(a==1,
-  straseq(b,c,pt)
- ,
-  cda=1-a;
-  if(cda>0,
-   cds=1;
-  ,
-   cda=-cda;cds=-1;
-  );
-  if(b>0,
-   cka=b;cks=cds;
-  ,
-   cka=-b;cks=-cds;
-  );
-
-  dnn=gcd(cda,cka);
-  cka=cka/dnn;cda=cda/dnn;
-
-//******************
-  cA=c*cda-cks*cka;
-  if(cA>=0,
-   tmps="";
-  ,
-   tmps="-";
-   cA=-cA;
-  );
-//******************
-  if(cda==1,
-   if(cA<>1,
-    tmps=tmps+text(cA)+ "\cdot ";
-   );
-   if(a>0,
-    tmps=tmps+text(a)+"^{n-1}";
-   ,
-    tmps=tmps+"("+text(a)+")"+"^{n-1}";
-   );
-   if(cks>0,
-    tmps=tmps+" + "+text(cka)+"$";
-   ,
-    tmps=tmps+" - "+text(cka)+"$";
-   );
-  ,
-   if(a>0,
-//     tmps=tmps+"\bunsuu{"+text(cA)+"}{"+text(cda)+"}\cdot "+text(a1)+"^{n-1}";
-    tmps=tmps+"\dfrac{"+text(cA)+"}{"+text(cda)+"}\cdot "+text(a)+"^{n-1}";
-   ,
-//     tmps=tmps+"\bunsuu{"+text(cA)+"}{"+text(cda)+"}\cdot ("+text(a1)+")^{n-1}";
-    tmps=tmps+"\dfrac{"+text(cA)+"}{"+text(cda)+"}\cdot ("+text(a)+")^{n-1}";
-   );
-   if(cks>0,
-//     tmps=tmps+" - \bunsuu{"+text(cka)+"}{"+text)cda)+"}$";
-    tmps=tmps+" + \dfrac{"+text(cka)+"}{"+text(cda)+"}$";
-   ,
-//     tmps=tmps+" + \bunsuu{"+text(cka)+"}{"+text)cda)+"}$";
-    tmps=tmps+" - \dfrac{"+text(cka)+"}{"+text(cda)+"}$";
-   );
-  ); 
-//******************
-  Letter(pt,"e","一般項 $a_n="+tmps,["Size=2"]);
- );
-);
-
-pA=[-1.76,4.58];
-pDx=0.68;pDy=-0.5;
-sg1=[pA,[pA_1,pA_2+pDy],[pA_1+pDx,pA_2+pDy],[pA_1+pDx,pA_2],pA];
-pB=[-4.9,3.76];
-sg2=[pB,[pB_1,pB_2+pDy],[pB_1+pDx,pB_2+pDy],[pB_1+pDx,pB_2],pB];
-pC=[3.19,1.11];
-sg3=[pC,[pC_1,pC_2+pDy],[pC_1+pDx,pC_2+pDy],[pC_1+pDx,pC_2],pC];
-pD=[-4.88,-1.83];
-sg4=[pD,[pD_1,pD_2+pDy],[pD_1+pDx,pD_2+pDy],[pD_1+pDx,pD_2],pD];
-
-  Shade(["sg1"],["Color=green"]);
-  Shade(["sg2"],["Color=yellow"]);
-  Shade(["sg3"],["Color=yellow"]);
-  Shade(["sg4"],["Color=yellow"]);
