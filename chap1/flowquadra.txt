@@ -1,0 +1,75 @@
+Ketinit();
+
+Setketcindyjs(["Grid=0.5","Label=[P1,P2,T,P3,P4]"]);// no ketjs
+////HTMLに書き出したときGridが0.5
+
+if(newflg==1,
+  flg=1;
+  start=Counttime();
+  st=Textedit(51,"");
+  if(length(st)>0,
+    Startlearning(st);
+    Msgfun=["出題ボタンを押して下さい",[-10,l1+l2+1.2],20,[0,0,0]];
+    quesnew=1;
+    newflg=0;
+  ,
+    Msgfun=["IDを入れて下さい",[-10,l1+l2+1.2],20,[0,0,0]];
+  );
+);
+
+if(quesflg==1,
+  if(quesnew==1,
+    Makeques();
+    Startquestion(Ex,Ca);
+    Msgsc=[];
+    Msghj=[];//出題ボタンを押すと標準形の表示が初期化される
+    quesgiven=1;
+    graphflg=0;
+    quesnew=0;
+    scorectr=1;
+    recordfin=0;
+  );
+  quesflg=0;
+);
+
+if(quesgiven==1,
+  tmp="("+text(T.x)+", "+text(T.y)+")";
+  Msg1=[tmp,[-12+ds/4,l1-dy],28];
+);
+
+if(scoreflg==1,
+  if(scorectr>0,
+    tmp=Scoring();
+    Makequesdata(tmp_1,tmp_2,scorectr);
+    scorectr=scorectr+1;
+    quesnew=1;
+  );
+  scoreflg=0;
+);
+
+if(graphflg==1,
+  Drawfig();
+);
+
+if(recordflg==1,
+  if(recordfin==0,
+    Updatelog();
+    Subsedit(59,LogData);
+//    scorectr=0;
+//    recordfin=1;
+    quesnew=1;
+  );
+  recordflg=0;
+);
+
+Ospline("1",[P1,P2,T,P3,P4]);
+Drwaxes();
+
+Displetters(Msg0);
+Displetters(Msg1);
+Displetters(Msg2);
+Displetters(Msgfun);
+Displetters(Msgsc);
+Displetters(Msghj);
+
+Windispg();

@@ -24,12 +24,10 @@ EndQues=0;
 
 newflg=1;
 quesflg=0;
-quesready=0;
-quesfin=1;
+quesgiven=0;
+quesnew=1;
 scoreflg=0;
-scorefin=0;
 recordflg=0;
-recordfin=0;
 
 Getcurtime():=Getcurtime(date(),time());
 Getcurtime(ymd,hms):=(

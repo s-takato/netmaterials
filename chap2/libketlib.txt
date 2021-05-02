@@ -5,19 +5,19 @@ Seteditable(10,["","Size=18","Width=80"]);
 Seteditable(11,["","Size=18","Width=80"]);
 Seteditable(12,["","Size=18","Width=80"]);// no ketjs off
 
-Deformtex(frm):=(
-  regional(tmp,tfrm);
-  tmp=replace(frm,"*","");
-  tmp=replace(tmp,"+-","-");
-  tmp=replace(tmp,"+0x^2","");
-  tmp=replace(tmp,"1x^2","x^2");
-  tmp=replace(tmp,"+0x","");
-  tmp=replace(tmp,"1x","x");
-  tmp=replace(tmp,"+1x","+x");
-  tmp=replace(tmp,"+0","");
-  tfrm=Totexform(tmp);
-  tfrm;
+Newlesson(st):=(
+  regional(pP,flg);
+  pP=[0.5,3.8];
+  if(length(st)==0,
+    Msgnew=["IDを入力",pP,20,[0,0,1]];
+  ,
+    Msgnew=["出題を押す",pP,20,[0,0,1]];
+    quesnew=1;
+    quesgiven=0;
+    newflg=0;
+  );
 );
+
 
 Deformtex(frm):=(
   regional(tmp,tfrm);
@@ -46,16 +46,14 @@ Makeques():=(
   b=-(a1+a2+a3);
   c=a1*a2+a2*a3+a3*a1;
   d=-a1*a2*a3;
-  eq1=Assign("x^3+b*x^2+c*x+d=0",["b",b,"c",c,"d",d]);
-  frm=Assign("x^3+b*x^2+c*x+d=0",
-       ["b",text(b),"c",text(c),"d",text(d)]);
-  cfrm=Tocindyform(frm);
+  frm=Assign("x^3+b*x^2+c*x+d=0",["b",text(b),"c",text(c),"d",text(d)]);
+ cfrm=Tocindyform(frm);
   Subsedit(10,"");
   Subsedit(11,"");
   Subsedit(12,"");
   tfrm=Deformtex(frm);
   Msgques=[
-    ["("+text(QuesNo+1)+") "+"$"+tfrm+"$",pQ,20],
+    ["("+text(QuesNo+1)+") "+"$"+ tfrm +"$",pQ,20],
     ["解$x$は",pQ+[0.2,-1],20]
   ];
   Msghint=[];
@@ -96,11 +94,20 @@ Scoring():=(
 //  [Stans,Score];
 );
 
+Msghint=[];
+Msggues=[];
+Msgsc=[];
+
+pB=[-9,-1];
+
+Msgtest=[];
+
 newflg=1;
 quesflg=0;
 quesgiven=0;
 quesnew=0;
 scoreflg=0;
+scorefin=0;
 Scorectr=0;
 recordflg=0;
 recordfin=0;

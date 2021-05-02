@@ -1,4 +1,4 @@
-// LIbrary for net materials   20200420
+// LIbrary for net materials   20200429
 // StartTime, LogData, QuesData, QuestNo, NewLearn, NewQues, EndQues はグローバル変数
 
 // Startlearning(studentname) stnameと開始の年月日時刻データを追加した文字列を返す
@@ -15,11 +15,19 @@
 
 LogData="";
 StartTime=0;
+QuesDataHead="";
 QuesData="";
 QuesNo=0;
 NewLearn=1;
 NewQues=1;
 EndQues=0;
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=1;
+scoreflg=0;
+recordflg=0;
 
 Getcurtime():=Getcurtime(date(),time());
 Getcurtime(ymd,hms):=(
@@ -74,12 +82,28 @@ Startlearning(studentname):=(
 Startquestion(question,correct):=(
   regional(no,ex,ca);
   StartTime=Counttime();
+  QuesNo=QuesNo+1; //210424
   no=text(QuesNo);
   ex=question;
   if(!isstring(ex),ex=text(ex));
   ca=correct;
   if(!isstring(ca),ca=text(ex));
-  QuesData=no+";;"+ex+";;"+ca;
+  QuesDataHead=no+";;"+ex+";;"+ca;
+);
+
+Makequesdata(stans,stscore):=Makequesdata(stans,stscore,0);
+Makequesdata(stans,stscore,ctr):=(
+  regional(ans,score,tm);
+  ans=stans;
+  if(!isstring(ans),ans=text(ans));
+  score=stscore;
+  if(!isstring(score),score=text(score));
+  QuesData=QuesDataHead+";;"+ans+";;"+score;
+  tm=Counttime()-StartTime;
+  QuesData=QuesData+";;"+text(tm);
+  if(ctr>0,
+    QuesData=QuesData+";;"+text(ctr);
+  );
 );
 
 Endquestion(studentans,studentscore):=(
@@ -107,7 +131,7 @@ Updatelog():=(
       tmp2=tmp_(1..(length(tmp)-1));
       tmp=tokenize(tmp1,";;");
       tmp=tmp_1;
-      if(tmp==QuesNo-1,
+      if(tmp==QuesNo, //210425a
         LogData=tmp2_1;
         forall(2..(length(tmp2)),
           LogData=LogData+"||"+tmp2_#;
@@ -116,7 +140,6 @@ Updatelog():=(
     );
     LogData=LogData+"||"+QuesData;
   );
-  QuesData="";
 );
 
 Log2csv(dt):=(
@@ -133,10 +156,82 @@ Log2csv(dt):=(
     forall(2..(length(tmp1)),
       tmp=tmp1_#;
       if(!isstring(tmp),tmp=text(tmp));
-      tmp2=tmp2+Dqq(tmp);
+      if(indexof(tmp,",")>0,tmp=Dqq(tmp));
+      tmp2=tmp2+tmp;
       if(#<length(tmp1),tmp2=tmp2+",");
     );
     out=out+","+tmp2;
   );
   out;
 );
+
+Displetters(msgLorg):=(
+  regional(msgL,pos,str,size,color);
+  msgL=msgLorg;
+  if(length(msgL)>0,
+    if(isstring(msgL_1),msgL=[msgL]);
+    forall(msgL,
+      pos=#_2;
+      str=#_1;
+      if(length(#)>2,size=#_3,size=16);
+      if(length(#)>3,color=#_4,color=[0,0,0]); 
+      drawtext(pos,str,size->size,color->color);
+    );
+  );
+);
+
+Dispexprs(msgLorg):=(
+  regional(msgL,pos,str,size,color);
+  msgL=msgLorg;
+  if(length(msgL)>0,
+    if(isstring(msgL_1),msgL=[msgL]);
+    forall(msgL,
+      pos=#_2;
+      str="$"+#_1+"$";
+      if(length(#)>2,size=#_3,size=16);
+      if(length(#)>3,color=#_4,color=[0,0,0]);    
+      drawtext(pos,str,size->size,color->color);
+    );
+  );
+);
+
+Confirmstudent(st,Students):=(
+  regional(out,tmp,tmp1);
+  if(length(st)==1,st="0"+st);
+  tmp=substring(st,0,2);
+  tmp1=select(Students,indexof(#,tmp)>0);
+  if(length(tmp1)==0,
+    if(st=="noname",
+      out=[1,"番号入力",""];
+    ,
+      out=[2,"番号違い",""];
+    );
+  ,
+    tmp1=tmp1_1;
+    out=[0,"OK=>",tmp1];
+  );
+  out;
+);
+
+Csvtext():=Csvtext("alltext");
+Csvtext(fname):=(
+  regional(tmp,tmp1,tL,numL,tnL,fid);
+  tmp=allelements();
+  tmp1=allpoints();
+  tL=remove(tmp,tmp1);
+  numL=apply(tL,replace(#.name,"Text",""));
+  numL=apply(numL,replace(#,"''",".2"));
+  numL=apply(numL,replace(#,"'",".1"));
+  numL=apply(numL,if(length(#)==0,"-1",#));
+  numL=apply(numL,parse(#));
+  tnL=apply(1..(length(numL)),
+     [numL_#,inspect(tL_#,"name"),inspect(tL_#,"text.text")]);
+  tnL=sort(tnL,[#_1]);
+  fid=openfile(fname+".csv");
+  forall(tnL,
+   println(fid,#_1+","+#_2+","+#_3);
+  );
+  closefile(fid);
+  println("generate "+fname+".csv");
+);
+
