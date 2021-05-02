@@ -1,0 +1,142 @@
+// LIbrary for net materials   20200420
+// StartTime, LogData, QuesData, QuestNo, NewLearn, NewQues, EndQues はグローバル変数
+
+// Startlearning(studentname) stnameと開始の年月日時刻データを追加した文字列を返す
+//       stname==""のときは，"noname"を返す
+// Startquestion(question,correct) 問題番号と問題と正解からQuesDataを新たに作成, NewQues=0
+// Endquestion(studentans,studentscore) QuesDataに解答得点解答時間を追加, NewQues=1,,QuesNo=+1
+// Updatelog() QuesNoが同じ場合はLogDataを更新，そうでなければ追加
+// Log2csv(dt) logdataをCSVのリストにして返す
+
+// Getcurtime() 現在の年月日と時刻データを返す
+// Counttime() 現在の時刻データを返す
+// Returntime(data) dataから時刻の通常データを返す
+// Returndatetime(data) dataから年月日と時刻の通常データのリストを返す
+
+LogData="";
+StartTime=0;
+QuesData="";
+QuesNo=0;
+NewLearn=1;
+NewQues=1;
+EndQues=0;
+
+Getcurtime():=Getcurtime(date(),time());
+Getcurtime(ymd,hms):=(
+  regional(out,tmp,tmp1);
+  out=text(ymd_1*10000+ymd_2*100+ymd_3);
+  tmp=text(hms_1*3600+hms_2*60+hms_3);
+  tmp1=substring("0000000",0,5-length(tmp));
+  out=out+tmp1+tmp;
+  out;
+);
+
+Counttime():=(
+  regional(tmp,tmp1);
+  tmp=time();
+  tmp_1*3600+tmp_2*60+tmp_3;
+);
+
+Returndatetime(data):=(
+  regional(dstr,dt,tm,tmp);
+  dstr=text(data);
+  dt=substring(dstr,0,8);
+  tmp=substring(dstr,8,length(dstr));
+  tm=Returntime(tmp);
+  [dt,tm];
+);
+
+Returntime(timedata):=(
+  regional(tmp,tmp1,out);
+  tmp=timedata;
+  if(isstring(tmp),tmp=parse(tmp));
+  out=[floor(tmp/3600)];
+  tmp=mod(tmp,3600);
+  out=append(out,floor(tmp/60));
+  tmp=mod(tmp,60);
+  tmp1=append(out,tmp);
+  out="";
+  forall(tmp1,
+    out=out+text(#)+":";
+  );
+  out=substring(out,0,length(out)-1);
+  out;
+);
+
+Startlearning(studentname):=(
+  regional(st);
+  //global LogData, QuesNo, QuesData
+  st=studentname;
+  if(length(st)==0,st="noname");
+  LogData=st+";;"+Getcurtime();
+);
+
+Startquestion(question,correct):=(
+  regional(no,ex,ca);
+  StartTime=Counttime();
+  no=text(QuesNo);
+  ex=question;
+  if(!isstring(ex),ex=text(ex));
+  ca=correct;
+  if(!isstring(ca),ca=text(ex));
+  QuesData=no+";;"+ex+";;"+ca;
+);
+
+Endquestion(studentans,studentscore):=(
+  regional(ans,score,tm);
+  // global QuesData,StartTime, EndQues
+  if(EndQues==0,
+    ans=studentans;
+    if(!isstring(ans),ans=text(ans));
+    score=studentscore;
+    if(!isstring(score),score=text(score));
+    QuesData=QuesData+";;"+ans+";;"+score;
+    tm=Counttime()-StartTime;
+    QuesData=QuesData+";;"+text(tm);
+    EndQues=1;
+  );
+);
+
+Updatelog():=(
+  regional(tmp,tmp1,tmp2);
+  //global LogData,QuesData
+  if(length(QuesData)>0,
+    tmp=tokenize(LogData,"||");
+    if(length(tmp)>1,
+      tmp1=tmp_(-1);
+      tmp2=tmp_(1..(length(tmp)-1));
+      tmp=tokenize(tmp1,";;");
+      tmp=tmp_1;
+      if(tmp==QuesNo-1,
+        LogData=tmp2_1;
+        forall(2..(length(tmp2)),
+          LogData=LogData+"||"+tmp2_#;
+        );
+      );
+    );
+    LogData=LogData+"||"+QuesData;
+  );
+  QuesData="";
+);
+
+Log2csv(dt):=(
+  regional(cL,dL,out,nn,tmp,tmp1,tmp2);
+  cL=[];
+  dL=tokenize(dt,"||");
+  tmp=dL_1;
+  tmp1=tokenize(tmp,";;");
+  tmp=Returndatetime(tmp1_2);
+  out=tmp1_1+","+tmp_1+","+tmp_2;
+  forall(2..(length(dL)),nn,
+    tmp1=tokenize(dL_nn,";;");
+    tmp2=text(tmp1_1)+",";
+    forall(2..(length(tmp1)),
+      tmp=tmp1_#;
+      if(!isstring(tmp),tmp=text(tmp));
+      tmp2=tmp2+Dqq(tmp);
+      if(#<length(tmp1),tmp2=tmp2+",");
+    );
+    out=out+","+tmp2;
+  );
+  out;
+);
