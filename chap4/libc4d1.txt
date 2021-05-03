@@ -1,0 +1,88 @@
+////Setting elements
+Seteditable(51,["ID=","Size=20","Width=150"]);// no ketjs on
+Seteditable(59,["","Size=16","Width=700"]);
+Seteditable(10,["","Size=18","Width=80"]);
+//Seteditable(11,["","Size=18","Width=80"]);
+//Seteditable(12,["","Size=18","Width=80"]);// no ketjs off
+
+Makeques():=(
+  regional(a,b,c,frm,cfrm,tfrm,tmp,tmp1,pQ,Ex,Ca); //tfrmが抜け
+  // global  Scorectr
+  pQ=[-9,3.8];
+  a=0;b=0;c=0; //最後の;がなかった．かつこの行は不要
+  frm="";
+  a=4-randomint(8);
+  b=6-randomint(4);
+  c=b^a;
+  tmp1=Fracform(c,1000);
+  tmp=["b",format(b,6),"c",tmp1_1]; //cはTexmathで
+//  ex1=Assign("log(c)/(log(b))",["b",b,"c",c]); //不要
+  frm=Assign("log(b,c)=?",tmp);  //TeX形式だった
+  cfrm=Tocindyform(frm);
+  Subsedit(10,"");
+  tfrm=Totexform(frm);
+  Ex=tfrm;
+  Ca=Textformat([a,b,c],9);
+  Msgques=[
+    ["("+text(QuesNo+1)+") "+"$"+tfrm+"$",pQ,20],
+    ["解答",pQ+[0.2,-1],20]
+  ];
+  Msghint=[];
+  Msgsc=[];
+  quesgiven=1;
+  quesnew=0;
+  tipsflag=0;
+  [Ex,Ca];
+);
+
+Makehint():=(
+  regional(abc,tmp,tmp1,tmp2,pB);
+  pB=[-9,-1];
+  abc=parse(Ca);
+  tmp=Fracform(abc_3,10000);
+  tmp1=Totexform(tmp_1);
+  tmp2=Tocindyform(tmp_1);
+  Msghint=["ヒント：$"+text(abc_2)+"^{"+text(abc_1)+"}="+tmp1+"$",pB,20];
+);
+
+Scoring(Stans):=(
+  regional(st,Score,tmp,tmp1,pB);
+  pB=[-9,-1];
+  if(length(Stans)>0,
+    // st=apply(tmp,parse(#));
+    // st=sort(st);
+    st=parse(Stans);
+	tmp1=parse(Ca);
+   	if(tmp1_1==st,
+      Score=1;
+      Msgsc=["正解",pB,20];
+    ,
+      Score=0;
+      Msgsc=["不正解",pB,20];
+    );
+  ,
+    Score=-1;
+    Msgsc=["未入力",pB,20];
+  );
+  Score;
+);
+
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+scorefin=0;
+Scorectr=0;
+recordflg=0;
+recordfin=0;
+
+Msghint=[];
+Msggues=[];
+Msgsc=[];
+Msgnew=[];
+
+pt1=[-3,5];
+
+Msgtest=[];
