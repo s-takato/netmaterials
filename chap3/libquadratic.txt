@@ -1,0 +1,150 @@
+
+////命令をテキストファイルに記述してKetlibにimportで読み込ませるよう書く
+
+Seteditable(51,["ID=","Size=20","Width=200"]);// no ketjs
+Seteditable(59,["","Size=18","Width=500"]);// no ketjs
+////no ketjs on の行から no ketjs off の行まで no ketjs
+//inspect(Text31,"colorfill",0);//no ketjs on
+//inspect(Text32,"colorfill",0);
+//inspect(Text33,"colorfill",0);
+//inspect(A,"ptsize",5.5);//no ketjs off
+
+l1=1.3;l2=1;l3=-12;ds=4.5;dy=1;
+Msg0=["頂点を求めてTを移動する",[l3,l1+l2],20];
+////Msgメッセージ．figureコンソールの下にDispletterやDispExprsで表示させる
+////Msg=[[表示文,座標,大きさ,[r,g,b]],[同様],･･･];とまとめられる
+
+Makeques():=( ////問題作成の命令．figureコンソールに条件を指定する
+  regional(tmp,frm,flg,pt1,pt2);//一時的なこの命令内の変数
+  // global Ex,Ca,tfrm,cfrm //グローバルな変数．この命令外でも共通
+  flg=1;
+  while(flg==1,
+    a1=0;
+    while(a1==0,
+      a1=randominteger(5)-2;
+    );
+    p1=randominteger(7)-3;
+    q1=randominteger(7)-3;//-3から3
+    b1=-2*a1*p1;
+    c1=a1*p1*p1+q1;
+    frm=Assign("a*x^2+b*x+c",
+       ["a",text(a1),"b",text(b1),"c",text(c1)]); ////文字列だと括弧がない (1)でなく1となる
+    tmp=replace(frm,"1*",""); ////1*があるときは空白に置き換える
+    tmp=replace(tmp,"+0*x","");
+    tmp=replace(tmp,"+0","");
+    frm=replace(tmp,"+-","-");
+    tfrm=Totexform(frm); //TeX形式へ
+    cfrm=Tocindyform(frm); //Cindy形式へ
+    Msgfun=["("+text(QuesNo+1)+")"+" $y="+tfrm+"$",[-10,l1+l2+1.2],20,[0,0,0]];
+////QuesNoはlibfornet.txtのStartquestionにある
+    f(x):=[x,parse(cfrm)]; ////点を返す関数．
+    pt1=f(p1+1);pt2=f(p1+2);
+    if((pt2_2>=-5)&(pt2_2<=5),
+      flg=0;
+    );
+  );
+  Putpoint("P1",[-2,-6]);
+  Putpoint("P2",[-1,-6]);
+  Putpoint("T",[0,-6]);
+  Putpoint("P3",[1,-6]);
+  Putpoint("P4",[2,-6]);
+  pT=T.xy;
+  Ex="y="+tfrm;
+  Ca=text([p1,q1]);
+);
+
+Drawfig():=(
+  regional(frmpq,tmp,tfrmpq);
+  // Global cfrm Msghj
+  frmpq=Assign("a*(x-p)^2+q",["a",text(a1),"p",text(p1),"q",text(q1)]);
+  tmp=Totexform(frmpq);
+  tmp=replace(frmpq,"1*","");
+  tmp=replace(tmp,"-1*","-");
+  tmp=replace(tmp,"-2*","-2");
+  tmp=replace(tmp,"-3*","-3");
+  tmp=replace(tmp,"-+","-");
+  tmp=replace(tmp,"+-","-");
+  tmp=replace(tmp,"--","+");
+  tmp=replace(tmp,"+0","");
+  tmp=replace(tmp,"(x-0)","x");
+  tfrmpq=Totexform(tmp);
+  Plotdata("2",cfrm,"x",["Color=blue","Num=200","Msg=n"]);
+  Msghj=["標準形：$y="+tfrmpq+"$",[l3+1,-4.5],20];
+);
+
+Scoring():=(
+  regional(ans,eps,pB,score,gosa2,
+      stans,tmp,tmp1,tmp2);
+  //global Ex,Ca
+  pB=[-11,-1];eps=10^(-3);gosa2=0.4;
+  stans=Assign("[p,q]",["p",text(T.x),"q",text(T.y)]);
+  pP=parse(stans);
+  if(|pP-[p1,q1]|<eps, ////こちらの方がよい
+    if((|P1-f(P1.x)|<gosa2)&(|P2-f(P2.x)|<gosa2)&
+       (|P3-f(P3.x)|<gosa2)&(|P4-f(P4.x)|<gosa2)&
+       (P1.x<P2.x)&(P2.x<T.x)&(T.x<P3.x)&(P3.x<P4.x),
+      Msgsc=["正解!",pB,24,[0,0,1]];score=2;
+    ,
+      Msgsc=["グラフが違う",pB,20,[1,0,0]];score=1;
+    );
+  ,
+    Msgsc=[
+      ["不正解",pB,20,[1,0,0]],
+      ["頂点: $("+p1+","+q1+")$",pB+[0,-2.6],20]
+    ];score=0;
+  );
+  graphflg=1;
+  [stans,score];
+);
+
+Drwaxes():=(
+  regional(tL);
+  tL=[];
+  forall(remove((-5)..(5),[0]),
+    tL=concat(tL,[#,text(#)]);
+  );
+  Htickmark(tL);
+  Vtickmark(tL);
+);
+
+Dispinitial():=(
+  regional(op,opc,pos,dpos,xpos,tmp);
+  pos=3;dpos=0.7;
+  xpos=-8;
+  if(quesgiven==1,
+    Drwexpr([xpos,pos+0.7],"\theta="+text(Angle)+"^{\circ}",20);
+  );
+  Drwexpr([xpos,pos],"\cos\theta=",20);
+  Drwexpr([xpos,pos-1*dpos],"\sin\theta=",20);
+  Drwexpr([xpos,pos-2*dpos],"\tan\theta=",20);
+  xpos=-7;
+//  pos=pos+0.1;
+//  Listplot("cs",[[xpos,pos],[xpos+1.2,pos]],["dr,1.5"]);
+//  Listplot("sn",[[xpos,pos-dpos],[xpos+1.2,pos-dpos]],["dr,1.5"]);
+//  Listplot("tn",[[xpos,pos-2*dpos],[xpos+1.2,pos-2*dpos]],["dr,1.5"]);
+);
+
+Delete():=(
+  regional(tmp,tmp1);
+  tmp=Textedit(ch,"");
+  if(length(tmp)>0,
+    tmp1=substring(tmp,0,length(tmp)-1);
+    Subsedit(ch,tmp1);
+  );
+);
+
+Allclear():=(
+  Subsedit(ch,"");
+);
+
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+scorectr=0;
+recordflg=0;
+recordfin=0;
+
+

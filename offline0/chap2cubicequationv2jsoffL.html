@@ -1507,19 +1507,19 @@ Csvtext(fname):=(
 );
 
 
-Newlesson(st):=(
-  regional(pP,flg);
-  pP=[0.5,3.8];
-  if(length(st)==0,
-    Msgnew=["IDを入力",pP,20,[0,0,1]];
-  ,
-    Msgnew=["出題を押す",pP,20,[0,0,1]];
-    quesnew=1;
-    quesgiven=0;
-    newflg=0;
-  );
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"+-","-");
+  tmp=replace(tmp,"+0x^2","");
+  tmp=replace(tmp,"1x^2","x^2");
+  tmp=replace(tmp,"+0x","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"+1x","+x");
+  tmp=replace(tmp,"+0","");
+  tfrm=Totexform(tmp);
+  tfrm;
 );
-
 
 Deformtex(frm):=(
   regional(tmp,tfrm);
@@ -1547,14 +1547,16 @@ Makeques():=(
   b=-(a1+a2+a3);
   c=a1*a2+a2*a3+a3*a1;
   d=-a1*a2*a3;
-  frm=Assign("x^3+b*x^2+c*x+d=0",["b",text(b),"c",text(c),"d",text(d)]);
- cfrm=Tocindyform(frm);
+  eq1=Assign("x^3+b*x^2+c*x+d=0",["b",b,"c",c,"d",d]);
+  frm=Assign("x^3+b*x^2+c*x+d=0",
+       ["b",text(b),"c",text(c),"d",text(d)]);
+  cfrm=Tocindyform(frm);
   Subsedit(10,"");
   Subsedit(11,"");
   Subsedit(12,"");
   tfrm=Deformtex(frm);
   Msgques=[
-    ["("+text(QuesNo+1)+") "+"$"+ tfrm +"$",pQ,20],
+    ["("+text(QuesNo+1)+") "+"$"+tfrm+"$",pQ,20],
     ["解$x$は",pQ+[0.2,-1],20]
   ];
   Msghint=[];
@@ -1592,20 +1594,11 @@ Scoring():=(
   );
 );
 
-Msghint=[];
-Msggues=[];
-Msgsc=[];
-
-pB=[-9,-1];
-
-Msgtest=[];
-
 newflg=1;
 quesflg=0;
 quesgiven=0;
 quesnew=0;
 scoreflg=0;
-scorefin=0;
 Scorectr=0;
 recordflg=0;
 recordfin=0;
@@ -1613,6 +1606,13 @@ recordfin=0;
 frm="";
 cfrm="";
 
+Msghint=[];
+Msggues=[];
+Msgsc=[];
+
+pB=[-9,-1];
+
+Msgtest=[];
 ;
 </script>
 <script id="csdraw" type="text/x-cindyscript">
@@ -1620,18 +1620,16 @@ Ketinit();
 Addax(0);
 
 if(newflg==1,
-  st=Textedit(51,"");
-  Newlesson(st);
+  st=Textedit(51,"noname");
+  Startlearning(st);
+  quesnew=1;
+  newflg=0;
 );
-
 
 if(quesflg==1,
   if(quesnew==1,
-    Msgnew=[];
     Makeques();
     Startquestion(Ex,Ca);
-    quesgiven=1;
-    quesnew=0;
   );
   quesflg=0;
 );
@@ -1646,24 +1644,20 @@ if(scoreflg==1,
     Scoring();
     Makequesdata(Stans,Score,Scorectr);
     Scorectr=Scorectr+1;
-    scorefin=1;
     quesnew=1;
   );
   scoreflg=0;
 );
 
 if(recordflg==1,
-  if(scorefin==1,
-    Updatelog();
-    Subsedit(59,LogData);
-    quesnew=1;
-    recordflg=0;
-  );
+  Updatelog();
+  Subsedit(59,LogData);
+  quesnew=1;
+  recordflg=0;
 );
 
-Displetters(Msgnew);
-Displetters(Msghint);
 Displetters(Msgques);
+Displetters(Msghint);
 Displetters(Msgsc);
 Displetters(Msgtest);
 
@@ -1687,7 +1681,7 @@ var cdy = CindyJS({
     {name: "NE", type: "Free", pos: [-2.5765765765768043, -4.0, -0.8016105353826085], color: [1.0,1.0,1.0], labeled: false, size: 2.0, border:false },
     {name: "Text11", type: "EditableText", pos: [4.0, -1.2921910427066938, -0.644614382946392], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
     {name: "Text51", type: "EditableText", pos: [4.0, -2.2828421898065554, -0.44987765762237736], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
-    {name: "Text59", type: "EditableText", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0, dock: {to: "SW", offset: [-19.144402473515584, -17.6909205403212]}},
+    {name: "Text59", type: "EditableText", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0, dock: {corner: "LL", offset: [81.0, 30.0]}},
     {name: "Text10", type: "EditableText", pos: [4.0, -0.946708218733155, -0.4773452888772243], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
     {name: "Text12", type: "EditableText", pos: [4.0, -1.9998354371349472, -0.9871278730834727], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
     {name: "Text13", type: "Button", pos: [0.7142857142857143, -4.0, -1.0592710646127035], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "quesflg=1;", text: "出題", textsize: 18.0},
@@ -1698,10 +1692,8 @@ var cdy = CindyJS({
   ports: [{
     id: "CSCanvas",
     width: 788,
-    height: 523,
-    transform: [{visibleRect: [-11.799416122645184, 6.704455954059458, 4.999029956206496, -4.444766506904283]}],
-    axes: true,
-    grid: 1.0,
+    height: 490,
+    transform: [{visibleRect: [-11.799416122645184, 6.704455954059458, 4.999029956206496, -3.7412782827899362]}],
     background: "rgb(247,247,247)"
   }],
   csconsole: false,
