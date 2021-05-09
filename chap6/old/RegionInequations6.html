@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    
+    <title>RegionInequations6.cdy</title>
+    <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #CSConsole {
+            background-color: #FAFAFA;
+            border-top: 1px solid #333333;
+            bottom: 0px;
+            height: 200px;
+            overflow-y: scroll;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cindyjs.org/dist/v0.8/CindyJS.css">
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/Cindy.js"></script>
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/KetCindyPlugin.js"></script>
+<script id="csinit" type="text/x-cindyscript">
+use("KetCindyPlugin");
+Dircdy=loaddirectory;
+setdirectory(gethome());
+import("ketcindy.ini");
+
+Setdirectory(Dircdy);
+import("libfornet.txt");
+import("libketlib.txt");
+
+Startquestion1(question):=(
+  regional(no,ex,ca);
+  StartTime=Counttime();
+  QuesNo=QuesNo+1; //210424
+  no=text(QuesNo);
+  ex=question;
+  if(!isstring(ex),ex=text(ex));
+  QuesDataHead=no+";;"+ex;
+);
+
+Msgnew=[];
+Msghint=[];
+Msggues=[];
+Msgsc=[];
+
+pB=[-9,-1];
+
+Msgtest=[];
+
+monctr=0;
+regflg=0;
+ansflg=0;
+drawflg=0;
+;
+</script>
+<script id="csdraw" type="text/x-cindyscript">
+Ketinit();
+Setketcindyjs(["NoLabel=[]","Color=offwhite"]);//no ketjs
+Seteditable(41,["","Size=18","Width=700"]);// no ketjs
+Setwindow([-5,5],[-5,5]);
+skyblue="Color=[0.37,0.07,0,0.12]";
+
+/////////////// 学習スタート /////////////
+if(newflg==1,
+  p1=[0.5,6.5];
+  st=Textedit(51,"");
+  if(length(st)>0,
+    Msgnew=["出題を選択",p1,20];
+    Startlearning(st);
+    quesgiven=0;
+    quesnew=1;
+    newflg=0;
+  ,
+    Msgnew=["IDを入力",p1,20];
+  );
+  Putpoint("A",[0,-6]);
+  Putpoint("B",[1,-6]);
+  Putpoint("C",[2,-6]);
+  Putpoint("D",[3,-6]);
+  Putpoint("E",[4,-6]);
+  ansflg=0;
+);
+
+/////////////// 問題作成 /////////////
+if(quesflg==1,
+  if(quesnew==1, 
+    CoefL(); //係数生成
+    monctr=monctr+1;
+    quesnew=0;
+  );
+  Makeques();
+  Startquestion1(Ex);
+println(Startquestion1(Ex));
+//  quesflg=0;
+);
+
+/////////////// 解答生成 ///////////
+if(ansflg==1,
+  Draw();
+);
+
+//////////////// 採点 //////////////
+if(scoreflg==1,
+  if(Scorectr>0,
+    Scoring();
+    Makequesdata(Stans,Score,Scorectr);
+    Scorectr=Scorectr+1;
+    scorefin=1;
+    quesnew=0;
+  );
+  scoreflg=0;
+);
+
+///////////////// 解答の記録 ////////////////
+if(recordflg==1,
+  Updatelog();
+  Subsedit(59,LogData);
+  Putpoint("A",[0,-6]);
+  Putpoint("B",[1,-6]);
+  Putpoint("C",[2,-6]);
+  Putpoint("D",[3,-6]);
+  Putpoint("E",[4,-6]);
+  quseflg=1;
+  quesnew=1;
+  ansflg=0;
+  drawflg=0;
+  scoreflg=0;
+  recordflg=0;
+);
+
+Displetters(Msgnew);
+Displetters(Msgques);
+Displetters(Msghint);
+Displetters(Msgsc);
+Displetters(Msgtest);
+
+Windispg();
+
+//Help("Setketcindyjs");
+</script>
+    <script type="text/javascript">
+var cdy = CindyJS({
+  scripts: "cs*",
+  defaultAppearance: {
+    dimDependent: 0.7,
+    fontFamily: "sans-serif",
+    lineSize: 1,
+    pointSize: 5.0,
+    textsize: 12.0
+  },
+  angleUnit: "°",
+  geometry: [
+    {name: "SW", type: "Free", pos: [4.0, 4.0, -0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "NE", type: "Free", pos: [4.0, 4.0, 0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "Text0", type: "Evaluate", pos: [2.310905490538277, -4.0, 0.5199280093503652], color: [1.0, 1.0, 1.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 0.27272728085517883, alpha: 0.0, visible: false, text: "①", textsize: 14.0},
+    {name: "Text59", type: "EditableText", pos: [-1.1800766283524904, -4.0, 0.5157713250643985], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0},
+    {name: "Text51", type: "EditableText", pos: [3.0627615062761504, -4.0, -0.6261276935965581], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
+    {name: "B", type: "Free", pos: [0.6666666666666666, -4.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "C", type: "Free", pos: [1.3333333333333333, -4.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "A", type: "Free", pos: [0.0, -4.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "D", type: "Free", pos: [2.0, -4.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "E", type: "Free", pos: [2.6666666666666665, -4.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "Text1", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.286, 0.286], fillalpha: 0.27272728085517883, script: "Viewtex();\nkc();", text: "Figure", textsize: 18.0, dock: {corner: "UL", offset: [10.0, -20.0]}},
+    {name: "Text2", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 0.27272728085517883, script: "if(length(Shellparent)>0,\n  Makeshell(),Makebat();\n);\nif(indexof(Libname,\"sci\")>0,\n  writetosci(2),writetoRS(2)\n);\nkc();", text: "Parent", textsize: 18.0, dock: {corner: "UL", offset: [77.0, -20.0]}},
+    {name: "Text3", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.929, 0.6], fillalpha: 0.48717948717948717, script: "Parafolder();", text: "ParaF", textsize: 18.0, dock: {corner: "UL", offset: [297.0, -20.0]}},
+    {name: "Text4", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.51, 0.949, 1.0], fillalpha: 0.27272728085517883, script: "Mkanimation();", text: "Anime", textsize: 18.0, dock: {corner: "UL", offset: [353.0, -20.0]}},
+    {name: "Text5", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 0.0, 1.0], fillalpha: 0.27272728085517883, script: "Mkflipanime();", text: "Flip", textsize: 18.0, dock: {corner: "UL", offset: [422.0, -20.0]}},
+    {name: "Text21", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.5726495726495726, script: "Mkketcindyjs(append(KETJSOP,\"Web=y\"));", text: "Ketjson", textsize: 18.0, dock: {corner: "UL", offset: [144.0, -20.0]}},
+    {name: "Text22", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.4358974358974359, script: "Mkketcindyjs(append(KETJSOP,\"Web=n\"));", text: "Ketjsoff", textsize: 18.0, dock: {corner: "UL", offset: [218.0, -20.0]}},
+    {name: "Text7", type: "Button", pos: [-3.811965811965812, -4.0, -0.6395064904682796], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;", text: "出題", textsize: 16.0},
+    {name: "Text541", type: "Button", pos: [4.0, 0.4283246977547496, 0.2324979548217755], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=2;\n", text: "(1)の採点", textsize: 16.0},
+    {name: "Text56", type: "Button", pos: [-1.9846153846153847, -4.0, 0.5177550609300309], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "recordflg=1;", text: "記録", textsize: 16.0},
+    {name: "Text542", type: "Button", pos: [4.0, -0.1519049920198368, 0.23237715168497675], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=4;\n", text: "(2)の採点", textsize: 16.0},
+    {name: "Text55", type: "Button", pos: [4.0, -0.8216777033732187, 0.23237715168497675], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=6;\nscoreflg=1;", text: "(3)の採点", textsize: 16.0},
+    {name: "Text531", type: "Button", pos: [4.0, 0.8428571428571429, 0.48077255657788576], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=1;\n", text: "(1)の解答", textsize: 16.0},
+    {name: "Text532", type: "Button", pos: [4.0, -0.33876221498371334, 0.4823385909641327], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=3;\nscoreflg=0;\n", text: "(2)の解答", textsize: 16.0},
+    {name: "Text533", type: "Button", pos: [4.0, -1.6883116883116882, 0.4807725565778855], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nansflg=1;\ndrawflg=5;", text: "(3)の解答", textsize: 16.0},
+    {name: "Text6", type: "Text", pos: [4.0, -1.5, 0.5], color: [0.0, 0.0, 0.0]},
+    {name: "Text8", type: "Text", pos: [4.0, -0.6471818232530836, 0.16884001927726636], color: [0.0, 0.0, 0.0]}
+  ],
+  ports: [{
+    id: "CSCanvas",
+    width: 1096,
+    height: 614,
+    transform: [{visibleRect: [-8.275371325041293, 9.315364130701779, 24.29126053221277, -8.929081088599313]}],
+    grid: 1.0,
+    snap: true,
+    background: "rgb(168,176,192)"
+  }],
+  csconsole: false,
+  cinderella: {build: 1999, version: [3, 0, 1999]}
+});
+    </script>
+</head>
+<body>
+    <div id="CSCanvas"></div>
+</body>
+</html>

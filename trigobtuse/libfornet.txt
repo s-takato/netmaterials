@@ -133,7 +133,7 @@ Updatelog():=(
       tmp2=tmp_(1..(length(tmp)-1));
       tmp=tokenize(tmp1,";;");
       tmp=tmp_1;
-      if(tmp==QuesNo, //210425a
+      if(tmp==QuesNo, //210425å
         LogData=tmp2_1;
         forall(2..(length(tmp2)),
           LogData=LogData+"||"+tmp2_#;
@@ -192,7 +192,7 @@ Dispexprs(msgLorg):=(
       str="$"+#_1+"$";
       if(length(#)>2,size=#_3,size=16);
       if(length(#)>3,color=#_4,color=[0,0,0]);    
-      drawtext(pos,str,size->size,color->color);
+      drawtext(pos,str,size,color);
     );
   );
 );

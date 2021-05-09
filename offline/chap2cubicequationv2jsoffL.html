@@ -1296,12 +1296,10 @@ EndQues=0;
 
 newflg=1;
 quesflg=0;
-quesready=0;
-quesfin=1;
+quesgiven=0;
+quesnew=1;
 scoreflg=0;
-scorefin=0;
 recordflg=0;
-recordfin=0;
 
 Getcurtime():=Getcurtime(date(),time());
 Getcurtime(ymd,hms):=(
@@ -1698,8 +1696,8 @@ var cdy = CindyJS({
   ports: [{
     id: "CSCanvas",
     width: 788,
-    height: 523,
-    transform: [{visibleRect: [-11.799416122645184, 6.704455954059458, 4.999029956206496, -4.444766506904283]}],
+    height: 507,
+    transform: [{visibleRect: [-11.799416122645184, 6.704455954059458, 4.999029956206496, -4.103681307333691]}],
     axes: true,
     grid: 1.0,
     background: "rgb(247,247,247)"

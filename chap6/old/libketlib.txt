@@ -1,0 +1,381 @@
+////Setting elements
+Seteditable(51,["ID=","Size=20","Width=150"]);// no ketjs on
+Seteditable(59,["","Size=16","Width=700"]);// no ketjs off
+
+CoefL():=(
+  regional(kk,xx,yy);
+  cL=[];
+  forall(1..4,
+    tmp=randominteger(7);
+    tmp=tmp-3;
+    cL=append(cL,tmp);
+  );
+  if((cL_1==0)&(cL_2==0),cL_1=1;);
+  if((cL_3==0)&(cL_4==0),cL_3=1;);
+  det=cL_1*cL_4-cL_2*cL_3;
+  cL=append(cL,2*cL_1-cL_2);
+  cL=append(cL,-cL_3+2*cL_4);
+  if(det!=0,
+    xx=(-cL_4*cL_5+cL_2*cL_6)/det;
+    yy=(-cL_1*cL_6+cL_3*cL_5)/det;
+    if(xx<-4,
+      dx=-ceil(xx);
+      cL_5=cL_5-cL_1*dx;
+      cL_6=cL_6-cL_3*dx;
+    );
+    if(xx>4,
+      dx=-floor(xx);
+      cL_5=cL_5-cL_1*dx;
+      cL_6=cL_6-cL_3*dx;
+    );
+    if(yy<-4,
+      dy=-ceil(yy);
+      cL_5=cL_5-cL_2*dy;
+      cL_6=cL_6-cL_4*dy;
+    );
+    if(yy>4,
+      dy=-floor(yy);
+      cL_5=cL_5-cL_2*dy;
+      cL_6=cL_6-cL_4*dy;
+    );
+  );
+  if(det==0,
+    cL_6=cL_6+1;
+  );
+);
+
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"(","");
+  tmp=replace(tmp,")","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"0x","");
+  tmp=replace(tmp,"1y","y");
+  tmp=replace(tmp,"0y","");
+  if(substring(tmp,0,1)=="+",
+    tmp=substring(tmp,1,length(tmp));
+  );
+  tmp=replace(tmp,"+0","");
+  tmp=replace(tmp,"-0","");
+  tmp=replace(tmp,"++","+");
+  tmp=replace(tmp,"+-","-");
+  tfrm=Totexform(tmp);
+  tfrm;
+);
+
+Makeques():=(
+  regional(tmp);
+  // global Ex, Scorectr
+  val1=cL_1; val2=cL_2; val3=cL_5; 
+  val4=cL_3; val5=cL_4; val6=cL_6;
+  eq1=Assign("v1*x+v2*y+v3",["v1",val1,"v2",val2,"v3",val3]);
+  teq1=Deformtex(eq1); //TeX形式へ
+  teq1=teq1+">0";
+  eq1=eq1+"=0";
+  Letter([7,YMAX+1],"e","次の連立不等式について，次の問いに答えよ．",["Size=2"]);
+  Expr([8,YMAX],"e",teq1,["Size=2"]);
+  Letter([14,YMAX],"e","$\cdots$①",["Size=2"]);
+
+  eq2=Assign("v4*x+v5*y+v6",["v4",val4,"v5",val5,"v6",val6]);
+  teq2=Deformtex(eq2); //TeX形式へ
+  teq2=teq2+">0";
+  eq2=eq2+"=0";
+  Expr([8,YMAX-1],"e",teq2,["Size=2"]);
+  Letter([14,YMAX-1],"e","$\cdots$②",["Size=2"]);
+  Letter([7,3],"e","(1) 不等式①の表す領域の境界を線分ABで指定せよ．",["Size=2"]);
+  Letter([7,0.5],"e","(2) 不等式②の表す領域の境界を線分CDで指定せよ．",["Size=2"]);
+  Letter([7,-2],"e","(3) 連立不等式の表す領域を点Eで指定せよ．",["Size=2"]);
+  Msgques=[
+//    ["("+text(QuesNo+1)+") "+"$"+tfrm+"$",pQ,20],
+//    ["解$x$は",pQ+[0.2,-1],20]
+  ];
+  Msghint=[];
+  Msgsc=[];
+  Scorectr=1;
+  quesgiven=1;
+  quesnew=0;
+  tipsflag=0;
+  Ex=teq1+";;"+teq2;
+  Ex;
+);
+
+Novec():=(
+  if(val2>0,
+    nv1=[val1,val2]/norm([val1,val2]);
+  );
+  if(val2==0,
+    if(val1>0,
+      nv1=[val1,val2]/norm([val1,val2]);
+    ,
+      nv1=-[val1,val2]/norm([val1,val2]);
+    );
+  );
+  if(val2<0,
+    nv1=-[val1,val2]/norm([val1,val2]); 
+  );
+
+  if(val5>0,
+    nv2=[val4,val5]/norm([val4,val5]);
+  );
+  if(val5==0,
+    if(val4>0,
+      nv2=[val4,val5]/norm([val4,val5]);
+    ,
+      nv2=-[val4,val5]/norm([val4,val5]);
+    );
+  );
+  if(val5<0,
+    nv2=-[val4,val5]/norm([val4,val5]);
+  );
+);
+
+Clip(pd):=(
+  regional(tmp,nn);
+  Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+  tmp=Intersectcrvs("fr0","pd");
+  nn=substring("pd",1,length("pd"));
+  Listplot(nn,tmp,["Num=1","dr,1.5"]);
+);
+
+Draw():=(
+  leq1=substring(eq1,0,length(eq1)-2);
+  leq2=substring(eq2,0,length(eq2)-2);
+  Deffun("f1(x,y)",["regional(z)","z="+leq1,"z"]);
+  Deffun("f2(x,y)",["regional(z)","z="+leq2,"z"]);
+  if(drawflg==1,
+    Lineplot("1",[A,B],["Num=1","nodisp"]);
+	Clip(ln1);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+  );
+
+  if(drawflg==2,
+    Implicitplot("1",eq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+    if((f1(A.x,A.y)==0)&(f1(B.x,B.y)==0),
+      Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+      sc1=1;
+    ,
+      Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+      sc1=0;
+    );
+  );
+
+  if(drawflg==3,
+    Implicitplot("1",eq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Lineplot("2",[C,D],["Num=1","nodisp"]);
+	Clip(ln2);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-0.7],"e","\mathrm{C}("+format(C.x,2)+",\ "+format(C.y,2)+"),\ \mathrm{D}("+format(D.x,2)+",\ "+format(D.y,2)+")",["Size=1.5","Color=red"]);
+    if((f1(A.x,A.y)==0)&(f1(B.x,B.y)==0),
+      Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+      sc1=1;
+    ,
+      Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+      sc1=0;
+    );
+  );
+
+  if(drawflg==4,
+    Implicitplot("1",eq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Implicitplot("2",eq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-0.7],"e","\mathrm{C}("+format(C.x,2)+",\ "+format(C.y,2)+"),\ \mathrm{D}("+format(D.x,2)+",\ "+format(D.y,2)+")",["Size=1.5","Color=red"]);
+    if((f1(A.x,A.y)==0)&(f1(B.x,B.y)==0),
+      Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+      sc1=1;
+    ,
+      Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+      sc1=0;
+    );
+    if((f2(C.x,C.y)==0)&(f2(D.x,D.y)==0),
+      Letter([20,-0.7],"e","正解",["Size=1.5","Color=red"]);
+      sc2=1;
+    ,
+      Letter([20,-0.7],"e","間違い",["Size=1.5","Color=red"]);
+      sc2=0;
+    );
+  );
+
+  if(drawflg==5,
+    Implicitplot("1",eq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Implicitplot("2",eq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-0.7],"e","\mathrm{C}("+format(C.x,2)+",\ "+format(C.y,2)+"),\ \mathrm{D}("+format(D.x,2)+",\ "+format(D.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-3.4],"e","\mathrm{E}("+format(E.x,2)+",\ "+format(E.y,2)+")",["Size=1.5","Color=red"]);
+    if((f1(A.x,A.y)==0)&(f1(B.x,B.y)==0),
+      Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+      sc1=1;
+    ,
+      Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+      sc1=0;
+    );
+    if((f2(C.x,C.y)==0)&(f2(D.x,D.y)==0),
+      Letter([20,-0.7],"e","正解",["Size=1.5","Color=red"]);
+      sc2=1;
+    ,
+      Letter([20,-0.7],"e","間違い",["Size=1.5","Color=red"]);
+      sc2=0;
+    );
+  );
+
+  if(drawflg==6,
+    Implicitplot("1",eq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Implicitplot("2",eq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5","Color=red"]);
+    Expr([10.5,1.8],"e","\mathrm{A}("+format(A.x,2)+",\ "+format(A.y,2)+"),\ \mathrm{B}("+format(B.x,2)+",\ "+format(B.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-0.7],"e","\mathrm{C}("+format(C.x,2)+",\ "+format(C.y,2)+"),\ \mathrm{D}("+format(D.x,2)+",\ "+format(D.y,2)+")",["Size=1.5","Color=red"]);
+    Expr([10.5,-3.4],"e","\mathrm{E}("+format(E.x,2)+",\ "+format(E.y,2)+")",["Size=1.5","Color=red"]);
+    if((f1(A.x,A.y)==0)&(f1(B.x,B.y)==0),
+      Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+      sc1=1;
+    ,
+      Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+      sc1=0;
+    );
+    if((f2(C.x,C.y)==0)&(f2(D.x,D.y)==0),
+      Letter([20,-0.7],"e","正解",["Size=1.5","Color=red"]);
+      sc2=1;
+    ,
+      Letter([20,-0.7],"e","間違い",["Size=1.5","Color=red"]);
+      sc2=0;
+    );
+    if((f1(E.x,E.y)>0)&(f2(E.x,E.y)>0),
+      Letter([20,-3.4],"e","正解",["Size=1.5","Color=red"]);
+      sc3=1;
+    ,
+      Letter([20,-3.4],"e","間違い",["Size=1.5","Color=red"]);
+      sc3=0;
+    );
+    Novec();
+    Region();
+  );
+);
+
+Region():=(
+  Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+  Cprd=nv1_1*nv2_2-nv1_2*nv2_1; //法線ベクトルが平行
+  S01=Ptstart(imp1); E01=Ptend(imp1);
+  S02=Ptstart(imp2); E02=Ptend(imp2);
+  if((S01_1>E01_1)%((S01_1==E01_1)&(S01_2>E01_2)),
+    S1=S01; E1=E01;
+  ,
+    S1=E01; E1=S01;
+  );
+  if((S02_1>E02_1)%((S02_1==E02_1)&(S02_2>E02_2)),
+    S2=S02; E2=E02;
+  ,
+    S2=E02; E2=S02;
+  );
+
+  Listplot("fr1",[[0,-5],[5,-5],[5,5],[0,5]],["nodisp"]);
+  pms1=Paramoncrv(S1,"sgfr1");
+  pms2=Paramoncrv(S2,"sgfr1");
+  Listplot("fr2",[[0,5],[-5,5],[-5,-5],[0,-5]],["nodisp"]);
+  pme1=Paramoncrv(E1,"sgfr2");
+  pme2=Paramoncrv(E2,"sgfr2");
+  if((pms1<pms2)%((pms1==pms2)&(pme1<pme2)),
+    gr1=imp1; nv3=nv1;
+    gr2=imp2; nv4=nv2;
+	Sg1=S1; Eg1=E1; Sg2=S2; Eg2=E2;
+  );
+  if((pms1>pms2)%((pms1==pms2)&(pme1>pme2)),
+    gr1=imp2; nv3=nv2;
+    gr2=imp1; nv4=nv1;
+	Sg1=S2; Eg1=E2; Sg2=S1; Eg2=E1;
+  );
+
+  if((Cprd==0)&((S1!=S2)%(E1!=E2)), //2直線が平行の場合
+    regional(tmp1,tmp2,vv,nv,pt1,pt2,pt3);
+    tmp1=(Sg1+Eg1)/2;
+    tmp2=(Sg2+Eg2)/2;
+    vv=tmp1-tmp2;
+    nv=vv/norm(vv);
+    pt1=tmp1+0.5*nv;
+    pt2=(tmp1+tmp2)/2;
+    pt3=tmp2-0.5*nv;
+    Partcrv("1",Eg1,Sg1,"fr0",["nodisp"]);
+    Partcrv("21",Sg1,Sg2,"fr0",["nodisp"]);
+    Partcrv("22",Eg2,Eg1,"fr0",["nodisp"]);
+    Partcrv("3",Sg2,Eg2,"fr0",["nodisp"]);
+    Joincrvs("1",["gr1","part1"],["nodisp"]);
+    Joincrvs("2",["Invert(gr1)","part21","gr2","part22"],["nodisp"]);
+    Joincrvs("3",["gr2","part3"],["nodisp"]);
+    if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)>0),
+      Shade(["join3"],[skyblue]);
+    );
+    Listplot("gr1",gr1,["dr,1.5"]);
+    Listplot("gr2",gr2,["dr,1.5"]);
+  );
+ 
+  if(Cprd!=0, //2直線が平行でない場合
+    regional(tmp,dv1,dv2,ndv1,ndv2,pt1,pt2,pt3,pt4);
+    tmp=Intersectcrvs("imp1","imp2");
+    tmp=tmp_1;
+    dv1=Sg1-tmp; ndv1=dv1/norm(dv1);
+    dv2=Sg2-tmp; ndv2=dv2/norm(dv2);
+    pt1=tmp+0.5*(ndv1+ndv2);
+    pt2=tmp+0.5*(-ndv1+ndv2);
+    pt3=tmp+0.5*(-ndv1-ndv2);
+    pt4=tmp+0.5*(ndv1-ndv2);
+
+    Partcrv("1",Sg1,Sg2,"fr0",["nodisp"]);
+    Partcrv("2",Sg2,Eg1,"fr0",["nodisp"]);
+    Partcrv("3",Eg1,Eg2,"fr0",["nodisp"]);
+    Partcrv("4",Eg2,Sg1,"fr0",["nodisp"]);
+
+    Listplot("1",[Sg2,tmp,Sg1],["nodisp"]);
+    Listplot("2",[Eg1,tmp,Sg2],["nodisp"]);
+    Listplot("3",[Eg2,tmp,Eg1],["nodisp"]);
+    Listplot("4",[Sg1,tmp,Eg2],["nodisp"]);
+
+    Joincrvs("1",["sg1","part1"],["nodisp"]);
+    Joincrvs("2",["sg2","part2"],["nodisp"]);
+    Joincrvs("3",["sg3","part3"],["nodisp"]);
+    Joincrvs("4",["sg4","part4"],["nodisp"]);
+
+    if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)>0),
+      Shade(["join3"],[skyblue]);
+    );
+    if((f1(pt4_1,pt4_2)>0)&(f2(pt4_1,pt4_2)>0),
+     Shade(["join4"],[skyblue]);
+    );
+    Listplot("gr1",gr1,["dr,1.5"]);
+    Listplot("gr2",gr2,["dr,1.5"]);
+  );
+);
+
+Scoring():=(
+  regional(st,tmp,tmp1,tmp2,tmp3);
+  // global Stans,Score
+  tmp1="A("+format(A.x,2)+","+format(A.y,2)+"),B("+format(B.x,2)+","+format(B.y,2)+")";
+  tmp2="C("+format(C.x,2)+","+format(C.y,2)+"),D("+format(D.x,2)+","+format(D.y,2)+")";
+  tmp3="E("+format(E.x,2)+","+format(E.y,2)+")";
+  tmp=tmp1+";;"+tmp2+";;"+tmp3;
+  Stans=text(tmp);
+  Score=sc1*sc2*sc3;
+);
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+scorefin=0;
+Scorectr=0;
+recordflg=0;
+recordfin=0;
+
+frm="";
+cfrm="";

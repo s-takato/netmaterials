@@ -1,0 +1,405 @@
+////Setting elements
+Seteditable(51,["ID=","Size=20","Width=150"]);// no ketjs on
+Seteditable(59,["","Size=16","Width=700"]);// no ketjs off
+
+QuesL():=(
+  regional(tmp);
+  qL=[];
+  forall(1..4,
+    tmp=randomint(7);
+    tmp=tmp-3;
+    qL=append(qL,tmp);
+  );
+  if(qL_3==qL_4,
+    qL_3=qL_3+1;
+  );
+  forall(1..2,
+    tmp=randomint(2);
+	qL=append(qL,tmp);
+  );
+);
+
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"(","");
+  tmp=replace(tmp,")","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"0x","");
+  tmp=replace(tmp,"+0","");
+  tmp=replace(tmp,"-0","");
+  tmp=replace(tmp,"++","+");
+  tmp=replace(tmp,"+-","-");
+  if(substring(tmp,0,1)=="+",
+    tmp=substring(tmp,1,length(tmp));
+  );
+  tfrm=Totexform(tmp);
+  tfrm;
+);
+
+Makeques():=(
+  regional(tmp,tmpmsg);
+  // global Ex, Scorectr
+  Putpoint("A",[2,-6]);
+  Putpoint("B",[3,-6]);
+  Putpoint("C",[4,-6]);
+
+  a1=qL_3; b1=-qL_3*qL_1+qL_2;
+  if((a1==0)&(b1==0),
+    a1=0; b1=1;
+  );
+  eq1="a1*x+b1";
+  eq1=Assign(eq1,["a1",a1,"b1",b1]);
+  teq1=Deformtex(eq1); //TeX形式へ
+  sgn1=qL_5;
+  if(sgn1==0,
+    tieq1="y>"+teq1;
+  ,
+    tieq1="y<"+teq1;
+  );
+
+  a2=qL_4; b2=-qL_4*qL_1+qL_2;
+  if((a2==0)&(b2==0),
+    a2=0; b2=1;
+  );
+  eq2="a2*x+b2";
+  eq2=Assign(eq2,["a2",a2,"b2",b2]);
+  teq2=Deformtex(eq2); //TeX形式へ
+  sgn2=qL_6;
+  if(sgn2==0,
+    tieq2="y>"+teq2;
+  ,
+    tieq2="y<"+teq2;
+  );
+
+  Deffun("f1(x,y)",["regional(z)","z=y-("+eq1+")","z"]);
+  Deffun("f2(x,y)",["regional(z)","z=y-("+eq2+")","z"]);
+
+  pQ=[6,6.5];
+  Msgques=[
+    ["("+text(QuesNo+1)+") 次の連立不等式の表す領域を求めよう．",pQ,20],
+    ["$"+tieq1+"\cdots$①",pQ+[3,-1],20],
+    ["$"+tieq2+"\cdots$②",pQ+[3,-2],20],
+	["まず，2点A, Bを置き，直線$y="+teq1+"$を直線ABで表しましょう．",pQ+[0,-3],20]
+  ];
+  Msghint=[];
+  Msgsc=[];
+  Scorectr=1;
+  quesgiven=1;
+  quesnew=0;
+  Ex=teq1+";;"+teq2;
+  Ca="y-("+eq1+"), y-("+eq2+")";
+);
+
+Clip(pd,no):=(
+  regional(tmp,nn);
+  Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+  tmp=Intersectcrvs("fr0","pd");
+  Listplot(text(no),tmp,["Num=1","dr,1.5"]);
+);
+
+Draw1():=(
+  regional(eps,tmp,a1x,a1y,b1x,b1y);
+  eps=10^(-2);
+  a1x=A.x; a1y=A.y; b1x=B.x; b1y=B.y;
+  tmp1="\mathrm{pA}1("+format(a1x,2)+","+format(a1y,2)+"),\ \mathrm{pB}1("+format(b1x,2)+","+format(b1y,2)+")";
+  Plotdata("1",eq1,"x",["Num=1","nodisp"]);
+  Clip(gr1,1);
+  Msghint=["次に，2点A, Bを移動し，直線$y="+teq2+"$を直線ABで表しましょう．",pQ+[0,-5],20];
+  if((abs(f1(a1x,a1y))<eps)&(abs(f1(b1x,b1y))<eps),
+    Msgsc=[["$"+tmp1+"$, 正解",pQ+[6,-4],20,[1,0,0]]];
+    sc1=1;
+  ,
+    Msgsc=[["$"+tmp1+"$, 間違い",pQ+[6,-4],20,[1,0,0]]];
+    sc1=0;
+  );
+);
+
+Draw1given():=(
+  Listplot("1",sg1,["Num=1","dr,1.5"]);
+  if((abs(f1(a1x,a1y))<eps)&(abs(f1(b1x,b1y))<eps),
+    Msgsc=[["$"+tmp1+"$, 正解",pQ+[6,-4],20,[1,0,0]]];
+    sc1=1;
+  ,
+    Msgsc=[["$"+tmp1+"$, 間違い",pQ+[6,-4],20,[1,0,0]]];
+    sc1=0;
+  );
+);
+
+Draw2():=(
+  regional(eps,a2x,a2y,b2x,b2y);
+  eps=10^(-2);
+  a2x=A.x; a2y=A.y; b2x=B.x; b2y=B.y;
+  tmp2="\mathrm{pA}2("+format(a2x,2)+","+format(a2y,2)+"),\ \mathrm{pB}2("+format(b2x,2)+","+format(b2y,2)+")";
+  Listplot("1",sg1,["Num=1","dr,1.5"]);
+  Plotdata("2",eq2,"x",["Num=1","nodisp"]);
+  Clip(gr2,2);
+  Msghint=[
+    ["次に，2点A, Bを移動し，直線$y="+teq2+"$を直線ABで表しましょう．",pQ+[0,-5],20],
+    ["最後に，点Cを置き，この連立不等式の表す領域を指定しましょう．",pQ+[0,-7],20]
+  ];
+  if((abs(f2(a2x,a2y))<eps)&(abs(f2(b2x,b2y))<eps),
+    Msgsc=append(Msgsc,["$"+tmp2+"$, 正解",pQ+[6,-6],20,[1,0,0]]);
+    sc2=1;
+  ,
+    Msgsc=append(Msgsc,["$"+tmp2+"$, 間違い",pQ+[6,-6],20,[1,0,0]]);
+    sc2=0;
+  );
+);
+
+Draw2given():=(
+  Listplot("1",sg1,["Num=1","dr,1.5"]);
+  Listplot("2",sg2,["Num=1","dr,1.5"]);
+  if((abs(f2(a2x,a2y))<eps)&(abs(f2(b2x,b2y))<eps),
+    Msgsc=append(Msgsc,["$"+tmp2+"$, 正解",pQ+[6,-6],20,[1,0,0]]);
+    sc2=1;
+  ,
+    Msgsc=append(Msgsc,["$"+tmp2+"$, 間違い",pQ+[6,-6],20,[1,0,0]]);
+    sc2=0;
+  );
+);
+
+Draw3():=(
+  regional(eps);
+  cx=C.x; cy=C.y;
+  pC=[cx,cy];
+  tmp3="\mathrm{pC}("+format(cx,2)+","+format(cy,2)+")";
+  Listplot("1",sg1,["Num=1","dr,1.5"]);
+  Listplot("2",sg2,["Num=1","dr,1.5"]);
+  Region();
+
+  if((sgn1==0)&(sgn2==0),
+    if((f1(cx,cy)>0)&(f2(cx,cy)>0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==0)&(sgn2==1),
+    if((f1(cx,cy)>0)&(f2(cx,cy)<0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==1)&(sgn2==0),
+    if((f1(cx,cy)<0)&(f2(cx,cy)>0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==1)&(sgn2==1),
+    if((f1(cx,cy)<0)&(f2(cx,cy)<0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+);
+
+Draw3given():=(
+  Listplot("1",sg1,["Num=1","dr,1.5"]);
+  Listplot("2",sg2,["Num=1","dr,1.5"]);
+  Region();
+  if((sgn1==0)&(sgn2==0),
+    if((f1(cx,cy)>0)&(f2(cx,cy)>0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==0)&(sgn2==1),
+    if((f1(cx,cy)>0)&(f2(cx,cy)<0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==1)&(sgn2==0),
+    if((f1(cx,cy)<0)&(f2(cx,cy)>0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+  if((sgn1==1)&(sgn2==1),
+    if((f1(cx,cy)<0)&(f2(cx,cy)<0),
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 正解",pQ+[6,-8],20,[1,0,0]]);
+      sc3=1;
+    ,
+      Msgsc=append(Msgsc,["$"+tmp3+"$, 間違い",pQ+[6,-8],20,[1,0,0]]);
+      sc3=0;
+    );
+  );
+);
+
+Region():=(
+  regional(tmp,dv1,dv2,ndv1,ndv2,pt1,pt2,pt3,pt4);
+  Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+  S01=Ptstart(sg1); E01=Ptend(sg1);
+  S02=Ptstart(sg2); E02=Ptend(sg2);
+  if(S01_1>E01_1,
+    S1=S01; E1=E01;
+  ,
+    S1=E01; E1=S01;
+  );
+  if(S02_1>E02_1,
+    S2=S02; E2=E02;
+  ,
+    S2=E02; E2=S02;
+  );
+
+  Listplot("fr1",[[0,-5],[5,-5],[5,5],[0,5]],["nodisp"]);
+  pms1=Paramoncrv(S1,"sgfr1");
+  pms2=Paramoncrv(S2,"sgfr1");
+  if(pms1<pms2,
+    gr1=sg1; gr2=sg2;
+	Sg1=S1; Eg1=E1; Sg2=S2; Eg2=E2;
+  );
+  if(pms1>pms2,
+    gr1=sg2; gr2=sg1;
+	Sg1=S2; Eg1=E2; Sg2=S1; Eg2=E1;
+  );
+
+  tmp=Intersectcrvs("gr1","gr2");
+  tmp=tmp_1;
+  dv1=Sg1-tmp; ndv1=dv1/norm(dv1);
+  dv2=Sg2-tmp; ndv2=dv2/norm(dv2);
+  pt1=tmp+0.5*(ndv1+ndv2);
+  pt2=tmp+0.5*(-ndv1+ndv2);
+  pt3=tmp+0.5*(-ndv1-ndv2);
+  pt4=tmp+0.5*(ndv1-ndv2);
+
+  Partcrv("1",Sg1,Sg2,"fr0",["nodisp"]);
+  Partcrv("2",Sg2,Eg1,"fr0",["nodisp"]);
+  Partcrv("3",Eg1,Eg2,"fr0",["nodisp"]);
+  Partcrv("4",Eg2,Sg1,"fr0",["nodisp"]);
+
+  Listplot("01",[Sg2,tmp,Sg1],["nodisp"]);
+  Listplot("02",[Eg1,tmp,Sg2],["nodisp"]);
+  Listplot("03",[Eg2,tmp,Eg1],["nodisp"]);
+  Listplot("04",[Sg1,tmp,Eg2],["nodisp"]);
+
+  Joincrvs("1",["sg01","part1"],["nodisp"]);
+  Joincrvs("2",["sg02","part2"],["nodisp"]);
+  Joincrvs("3",["sg03","part3"],["nodisp"]);
+  Joincrvs("4",["sg04","part4"],["nodisp"]);
+
+  Listplot("c1",[[cx,cy],pt1],["nodisp"]);
+  Listplot("c2",[[cx,cy],pt2],["nodisp"]);
+  Listplot("c3",[[cx,cy],pt3],["nodisp"]);
+  Listplot("c4",[[cx,cy],pt4],["nodisp"]);
+  Ip1=Intersectcrvs("sgc1","join1");
+  Ip2=Intersectcrvs("sgc2","join2");
+  Ip3=Intersectcrvs("sgc3","join3");
+  Ip4=Intersectcrvs("sgc4","join4");
+  
+  if(Ip1==[],
+    Listplot("j1",join1);
+  );
+  if(Ip2==[],
+    Listplot("j2",join2);
+  );
+  if(Ip3==[],
+    Listplot("j3",join3);
+  );
+  if(Ip4==[],
+    Listplot("j4",join4);
+  );
+
+  if((sgn1==0)&(sgn2==0),  
+ 	if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)>0),
+      Shade(["join3"],[skyblue]);
+    );
+    if((f1(pt4_1,pt4_2)>0)&(f2(pt4_1,pt4_2)>0),
+      Shade(["join4"],[skyblue]);
+    );
+  );
+  if((sgn1==0)&(sgn2==1),  
+    if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)<0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)<0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)<0),
+      Shade(["join3"],[skyblue]);
+    );
+    if((f1(pt4_1,pt4_2)>0)&(f2(pt4_1,pt4_2)<0),
+      Shade(["join4"],[skyblue]);
+    );
+  );
+  if((sgn1==1)&(sgn2==0),  
+    if((f1(pt1_1,pt1_2)<0)&(f2(pt1_1,pt1_2)>0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)<0)&(f2(pt2_1,pt2_2)>0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)<0)&(f2(pt3_1,pt3_2)>0),
+      Shade(["join3"],[skyblue]);
+    );
+    if((f1(pt4_1,pt4_2)<0)&(f2(pt4_1,pt4_2)>0),
+      Shade(["join4"],[skyblue]);
+    );
+  );
+  if((sgn1==1)&(sgn2==1),  
+    if((f1(pt1_1,pt1_2)<0)&(f2(pt1_1,pt1_2)<0),
+      Shade(["join1"],[skyblue]);
+    );
+    if((f1(pt2_1,pt2_2)<0)&(f2(pt2_1,pt2_2)<0),
+      Shade(["join2"],[skyblue]);
+    );
+    if((f1(pt3_1,pt3_2)<0)&(f2(pt3_1,pt3_2)<0),
+      Shade(["join3"],[skyblue]);
+    );
+    if((f1(pt4_1,pt4_2)<0)&(f2(pt4_1,pt4_2)<0),
+      Shade(["join4"],[skyblue]);
+    );
+  );
+//  Litplot("gr1",gr1,["dr,1.5"]);
+//  Litplot("gr2",gr2,["dr,1.5"]);
+);
+
+Scoring():=(
+  regional(st,tmp);
+  // global Stans,Score
+  tmp=tmp1+";;"+tmp2+";;"+tmp3;
+  Stans=text(tmp);
+  Score=sc1+sc2+sc3;
+//  Msgsc=[Stans,Score];
+);
+
+newflg=1;
+quesflg=0;
+quesgiven=0;
+quesnew=0;
+scoreflg=0;
+scorefin=0;
+Scorectr=0;
+recordflg=0;
+recordfin=0;
+
+frm="";
+cfrm="";

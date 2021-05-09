@@ -25,6 +25,51 @@
 
 <script id="csinit" type="text/x-cindyscript">
 Invert(x):=reverse(x);
+Textedit(no):=(
+  regional(tmp,tmp1,tmp2);
+  tmp="Text"+text(no)+".currenttext";
+  tmp1=parse(tmp);
+  tmp1;
+);
+Textedit(n0,str):=Textedit(n0,str,"="); //210406from
+Textedit(n0,str,sep):=( //210208from
+  regional(tmp,tmp1,tmp2,out);
+  tmp1=str;
+tmp1=Textedit(n0); //
+  tmp2=tmp1;
+  if(length(sep)>0,
+    tmp=Strsplit(sep+tmp1,sep);
+    tmp2=tmp_(-1);
+  ); //210406to
+  if(length(tmp2)==0,out=str,out=tmp2);
+  out;
+); //210208to
+Strsplit(str,key):=( // 210422 renewed
+  regional(tmp,out);
+  tmp=tokenize(str,key);
+  out=apply(tmp,if(!isstring(#),Textformat(#,10),#));
+  out;
+);
+Textformat(value,dig):=(
+  regional(vv,tmp,tmp1);
+  if(islist(value),
+    tmp1="[";
+    forall(value,
+      tmp1=tmp1+Textformat(#,dig)+",";
+    );
+    if(length(tmp1)>1, //18.01.29from
+      tmp1=substring(tmp1,0,length(tmp1)-1);
+    );
+    tmp1=tmp1+"]"; //18.01.29until
+  ,
+    if(ispoint(value) % isstring(value),
+      if(isstring(value),tmp1=Dq+value+Dq,tmp1=text(value)); // 15.10.02
+    ,
+      tmp1=format(value,dig);
+    );
+  );
+  tmp1;
+);
 Dqq(str):=DqDq(str); //18.02.11
 DqDq(str):=(
   unicode("0022")+str+unicode("0022");
@@ -223,32 +268,6 @@ Indexall(str,key):=(
   );
   out;
 );
-Strsplit(str,key):=( // 210422 renewed
-  regional(tmp,out);
-  tmp=tokenize(str,key);
-  out=apply(tmp,if(!isstring(#),Textformat(#,10),#));
-  out;
-);
-Textformat(value,dig):=(
-  regional(vv,tmp,tmp1);
-  if(islist(value),
-    tmp1="[";
-    forall(value,
-      tmp1=tmp1+Textformat(#,dig)+",";
-    );
-    if(length(tmp1)>1, //18.01.29from
-      tmp1=substring(tmp1,0,length(tmp1)-1);
-    );
-    tmp1=tmp1+"]"; //18.01.29until
-  ,
-    if(ispoint(value) % isstring(value),
-      if(isstring(value),tmp1=Dq+value+Dq,tmp1=text(value)); // 15.10.02
-    ,
-      tmp1=format(value,dig);
-    );
-  );
-  tmp1;
-);
 Assign(str):=( //190125from
   regional(tmp);
   tmp=[];
@@ -422,6 +441,514 @@ Tocindyformpart(str):=( //190521
   );
   out;
 );
+Plotdata(name1,func,variable):=Plotdata(name1,func,variable,[]);
+Plotdata(name1,func,variable,options):=(
+  regional(Fn,Va,tmp,tmp1,tmp2,eqL,name,Vname,x1,x2,dx,
+         PdL,Num,Ec,Dc,Fun,Exfun,x,Ke,Eps,Pa,Msg,
+         Ltype,Noflg,Inflg,Outflg,opstr,opcindy,color,color4);
+  if(substring(name1,0,1)!="-",  //190420from
+    name="gr"+name1;
+  ,
+    name=substring(name1,1,length(name1));
+  ); //190420to
+  tmp=Divoptions(options);
+  Ltype=tmp_1;
+  Noflg=tmp_2;
+  Inflg=tmp_3;
+  Outflg=tmp_4;
+  opstr=tmp_(length(tmp)-1);
+  color=tmp_(length(tmp)-2); color4=Colorrgb2cmyk(color); //200629
+  opcindy=tmp_(length(tmp));
+  eqL=tmp_5;
+  Num=50;
+  Ec=[];
+  Exfun="";
+  Dc=1000;
+  Msg="Y";
+ Msg="N"; //
+  forall(eqL,
+    tmp=Strsplit(#,"=");
+    tmp1=Toupper(substring(#,0,1));
+    if(tmp1=="N",
+      Num=parse(tmp_2);
+      opstr=opstr+","+Dqq(#);
+    );
+    if(tmp1=="E",
+      if(substring(tmp_2,0,1)=="[", //180817from
+        Ec=parse(tmp_2);
+        tmp1=replace(tmp_2,"[","c"+PaO());
+        tmp1=replace(tmp1,",",".0,");
+        tmp1=replace(tmp1,"]",".0)");
+        opstr=opstr+","+Dqq("Exc="+tmp1); //180817to
+      ,
+        Exfun=tmp_2; //200716
+        opstr=opstr+","+Dqq(#);
+      );
+    );
+    if(substring(#,0,1)=="D",
+      Dc=parse(tmp_2);
+      opstr=opstr+","+Dqq(#);
+    );
+    if(tmp1=="M", //190206from
+      Msg=Toupper(substring(tmp_2,0,1));
+    ); //190206to
+  );
+  if(Inflg==0 & Outflg==0,
+    Eps=10^(-3);
+    tmp=replace(func,LFmark,"");
+    tmp=tokenize(variable,"=");
+    Vname=tmp_1;
+    if(length(tmp)>1,
+      tmp=tmp_2;
+      tmp=parse(tmp);
+      x1=tmp_1;
+      x2=tmp_2;
+      ,
+      x1=XMIN;
+      x2=XMAX;
+    );
+    Ec=append(sort(Ec),10000);
+    Fun=Assign(func,Vname, "xx");
+    Exfun=Assign(Exfun,Vname, "xx");
+    PdL=[];
+    Ke=1;
+    forall(0..Num, 
+      xx=x1+#*(x2-x1)/Num; // differs from Scilab [ / Num-1]
+      if(length(Exfun)>0,
+        tmp=parse(Exfun);
+        if(abs(tmp)<Eps,
+          if(length(PdL)>0, //180817from
+            PdL=concat(PdL,["inf"]);
+          );
+        ,
+          tmp=[xx,parse(Fun)];
+          if(length(PdL)>0,
+            tmp1=PdL_(length(PdL));
+            if(Norm(tmp,tmp1)<Dc,
+              PdL=append(PdL,tmp);
+            ,
+              if(tmp1=="inf",
+                PdL=append(PdL,tmp);
+              ,
+                PdL=concat(PdL,[["inf"],tmp]);
+              );
+          );
+          ,
+            PdL=[tmp];
+          );
+        ); //180817to
+      ,
+        Pa=[];
+        if(xx-Ec_Ke<-Eps,
+          Pa=[xx,parse(Fun)];
+        );
+        if(abs(xx-Ec_Ke)<=Eps,
+          if(length(PdL)>0,
+            if(PdL_(length(PdL))_1!="inf",
+              Pa=["inf"];
+            );
+          );
+        );
+        if(xx-Ec_Ke>Eps,
+          Pa=[xx,parse(Fun)];
+          Ke=Ke+1;
+        );
+        if(length(Pa)>0,
+          if(Pa_1=="inf",
+            PdL=concat(PdL,[Pa]);
+          ,
+            if(length(PdL)==0,
+              PdL=[Pa];
+            ,
+              tmp=PdL_(length(PdL));
+              if(tmp_1=="inf",
+                PdL=concat(PdL,[Pa]);
+              ,
+                if(dist(tmp,Pa)<Dc,
+                  PdL=concat(PdL,[Pa]);
+                ,
+                  PdL=concat(PdL,[["inf"],Pa]);
+                );
+              );
+            );
+          );
+        );
+      );
+    );
+    tmp1=[];
+    tmp2=select(1..(length(PdL)),PdL_#==["inf"]);
+    tmp=1;
+    forall(tmp2,
+      if(#>tmp,
+        tmp1=concat(tmp1,[PdL_(tmp..(#-1))])
+      );
+      tmp=#+1;
+    );
+    if(tmp<length(PdL),
+      tmp1=concat(tmp1,[PdL_(tmp..(length(PdL)))]);
+    );
+    PdL=tmp1;
+    if(length(PdL)==1,
+      PdL=PdL_1;
+    );
+    if(Noflg<3,
+      if(Msg=="Y", //190206
+        println("generate Plotdata "+name);
+      );
+      if(Measuredepth(PdL)==1,
+        tmp1=apply(PdL,Pcrd(#));
+      ,
+        tmp1=[];
+        forall(PdL,tmp2,
+          tmp1=append(tmp1,apply(tmp2,Pcrd(#)));
+        );
+      );
+      tmp=name+"="+Textformat(tmp1,5)+";";
+      parse(tmp);
+    );
+    if(Noflg<3, //190818
+      if(isstring(Ltype),
+        Ltype=Getlinestyle(text(Noflg)+Ltype,name);
+     ,
+        if(Noflg==1,Ltype=0);
+      );
+      GCLIST=append(GCLIST,[name,Ltype,opcindy]);
+    );
+    PdL;
+  , 
+    if(Noflg<3, //190818
+      if(isstring(Ltype),
+        Ltype=Getlinestyle(text(Noflg)+Ltype,name);
+      ,
+        if(Noflg==1,Ltype=0);
+      );
+      if(Inflg==1,
+        GCLIST=append(GCLIST,[name,Ltype,opcindy]);
+      );
+    );
+  );
+);
+Divoptions(options):=(
+  regional(Ltype,Noflg,Inflg,Outflg,eqL,realL,strL,
+      color,opstr,opcindy,flg,tmp,tmp1,tmp2);
+  Ltype="dr";  // 2015.01.13
+  Noflg=0;
+  Inflg=0;
+  Outflg=0;
+  eqL=[];
+  realL=[];
+  strL=[];
+  color=Colorcmyk2rgb(KCOLOR); //200513
+  opstr="";
+  opcindy="";
+  forall(options,
+    flg=0;
+    if(flg==0,
+      if(isreal(#) % ispoint(#) % islist(#),
+        realL=append(realL,#);
+        opstr=opstr+","+text(#);
+        flg=1;
+      );
+    );
+    if(flg==0,
+      if(indexof(#,"=")>0,
+        tmp=Strsplit(#,"="); //180602from
+        tmp1=Toupper(tmp_1);
+        tmp2=tmp_2;
+        if(tmp1=="COLOR",
+          if(indexof(tmp2,"[")>0, //180928
+            tmp1=parse(tmp2);
+            color=tmp1;
+            if(length(tmp1)==4,
+              tmp1=Colorcmyk2rgb(tmp1);
+            );
+          ,
+            color=Colorname2cmyk(tmp2);//200425
+            tmp1=Colorcmyk2rgb(color); ;//200425
+          );
+          tmp="color->"+text(tmp1);
+          opcindy=opcindy+","+tmp;
+        ,
+          eqL=append(eqL,#);
+        );//180602to
+        flg=1; 
+      );
+    );
+    if(flg==0,
+      if(indexof(#,"no")+indexof(#,"No")>0,
+        if(indexof(#,"tex")>0,Noflg=1);
+        if(indexof(#,"disp")>0,Noflg=2);
+        if(indexof(#,"data")>0,Noflg=3);
+        flg=1;
+      );
+    );
+    if(flg==0,
+      if(indexof(#,"->")>0,
+        opcindy=opcindy+","+#;
+        flg=1; 
+      );
+    );
+    if(flg==0,
+      if(indexof(#,"out")+indexof(#,"Out")>0,
+        if(indexof(#,"-")==0,
+          Outflg=1;
+        ,
+          Outflg=2;
+        );
+        flg=1;
+      );
+    );
+    if(flg==0,
+      if(indexof(#,"in")+indexof(#,"In")>0,
+        if(indexof(#,"-")==0,
+          Inflg=1;
+        ,
+          Inflg=2;
+        );
+        flg=1;
+      );
+    );
+    if(flg==0,
+      tmp=substring(#,0,2);
+      tmp1=indexof(tmp,"dr")+indexof(tmp,"Dr");
+      tmp1=tmp1+indexof(tmp,"da")+indexof(tmp,"Da");
+      tmp1=tmp1+indexof(tmp,"id")+indexof(tmp,"Id");
+      tmp1=tmp1+indexof(tmp,"do")+indexof(tmp,"Do");
+      tmp1=tmp1+indexof(tmp,"dp")+indexof(tmp,"Dp");
+      if(tmp1>0,
+        Ltype=#;
+        flg=1;
+      );
+      if(flg==0,
+        if(length(#)>0, //180408
+          strL=append(strL,#);
+          opstr=opstr+","+Dq+#+Dq;
+        );
+      );
+    );
+  );
+  if(indexof(opcindy,"color->")==0,// 16.10.07from
+    tmp=Colorcmyk2rgb(KCOLOR); //200513[2lines]
+    opcindy=opcindy+",color->"+text(tmp);
+  );
+  [Ltype,Noflg,Inflg,Outflg,eqL,realL,strL,color,opstr,opcindy];
+);
+Toupper(str):=(
+  regional(alphabet,out,tmp,tmp1);
+  alphabet="abcdefghijklmnopqrstuvwxyz";
+  out="";
+  forall(1..(length(str)),
+    tmp=substring(str,#-1,#);
+    tmp1=indexof(alphabet,tmp);
+    if(tmp1>0,
+      out=out+unicode(text(tmp1+64),base->10);
+    ,
+      out=out+tmp;
+    );
+  );
+  out;
+);
+Colorname2cmyk(name):=( //181212
+  regional(dL,code,tmp);
+  dL=[
+    ["greenyellow",[0.15,0,0.69,0]],["yellow",[0,0,1,0]],
+    ["goldenrod",[0,0.1,0.84,0]],["dandelion",[0,0.29,0.84,0]],
+    ["apricot",[0,0.32,0.52,0]],["peach",[0,0.5,0.7,0]],
+    ["melon",[0,0.46,0.5,0]],["yelloworange",[0,0.42,1,0]],
+    ["orange",[0,0.61,0.87,0]],["burntorange",[0,0.51,1,0]],
+    ["bittersweet",[0,0.75,1,0.24]],["redorange",[0,0.77,0.87,0]],
+    ["mahogany",[0,0.85,0.87,0.35]],["maroon",[0,0.87,0.68,0.32]],
+    ["brickred",[0,0.89,0.94,0.28]],["red",[0,1,1,0]],
+    ["orangered",[0,1,0.5,0]],["rubinered",[0,1,0.13,0]],
+    ["wildstrawberry",[0,0.96,0.39,0]],["salmon",[0,0.53,0.38,0]],
+    ["carnationpink",[0,0.63,0,0]],["magenta",[0,1,0,0]],
+    ["violetred",[0,0.81,0,0]],["rhodamine",[0,0.82,0,0]],
+    ["mulberry",[0.34,0.9,0,0.02]],["redviolet",[0.07,0.9,0,0.34]],
+    ["fuchsia",[0.47,0.91,0,0.08]],["lavender",[0,0.48,0,0]],
+    ["thistle",[0.12,0.59,0,0]],["orchid",[0.32,0.64,0,0]],
+    ["darkorchid",[0.4,0.8,0.2,0]],["purple",[0.45,0.86,0,0]],
+    ["plum",[0.5,1,0,0]],["violet",[0.79,0.88,0,0]],
+    ["royalpurple",[0.75,0.9,0,0]],["blueviolet",[0.86,0.91,0,0.04]],
+    ["periwinkle",[0.57,0.55,0,0]], ["cadetblue",[0.62,0.57,0.23,0]],
+    ["cornflowerblue",[0.65,0.13,0,0]],
+    ["midnightblue",[0.98,0.13,0,0.43]],
+    ["navyblue",[0.94,0.54,0,0]],["royalblue",[1,0.5,0,0]],
+    ["blue",[1,1,0,0]],["cerulean",[0.94,0.11,0,0]],
+    ["cyan",[1,0,0,0]],["processblue",[0.96,0,0,0]],
+    ["skyblue",[0.62,0,0.12,0]],["turquoise",[0.85,0,0.2,0]],
+    ["tealblue",[0.86,0,0.34,0.02]],["aquamarine",[0.82,0,0.3,0]],
+    ["bluegreen",[0.85,0,0.33,0]],["emerald",[1,0,0.5,0]],
+    ["junglegreen",[0.99,0,0.52,0]],["seagreen",[0.69,0,0.5,0]],
+    ["green",[1,0,1,0]],["forestgreen",[0.91,0,0.88,0.12]],
+    ["pinegreen",[0.92,0,0.59,0.25]],["limegreen",[0.5,0,1,0]],
+    ["yellowgreen",[0.44,0,0.74,0]],["springgreen",[0.26,0,0.76,0]],
+    ["olivegreen",[0.64,0,0.95,0.4]],["rawsienna",[0,0.72,1,0.45]],
+    ["sepia",[0,0.83,1,0.7]],["brown",[0,0.81,1,0.6]],
+    ["tan",[0.14,0.42,0.56,0]],["gray",[0,0,0,0.5]],
+    ["lightgray",[0,0,0,0.15]], //190429,0809
+    ["cindycolor",[0.125,0.083,0,0.247]], //201027
+    ["black",[0,0,0,1]],["white",[0,0,0,0]],
+    ["offwhite",[0,0,0,0.03]] //190809
+  ];
+  tmp=select(dL,#_1==name);
+  if(length(tmp)>0,
+    tmp=tmp_1;
+    code=tmp_2;
+  ,
+    println("    "+name+" not found");
+    code=Assign(name); //190323
+  );
+);
+Colorcmyk2rgb(clr):=(
+  regional(clrnew,tmp,black);
+  if(length(clr)==4,  //200618
+    black=clr_4;
+    tmp=apply(clr,1-min(1,#*(1-black)+black));
+    clrnew=tmp_(1..3);
+  ,
+    clrnew=clr;  //200618
+  );
+  clrnew;
+);
+Colorrgb2cmyk(clr):=(
+  regional(clrnew,tmp,black);
+  if(length(clr)==3, //200618
+    tmp=apply(clr,1-#);
+    black=min(tmp);
+    if(black!=1, //181112from
+      tmp=apply(clr,(1-#-black)/(1-black));
+      clrnew=append(tmp,black);
+    ,
+      clrnew=[0,0,0,1];  //200618
+    ); //181112to
+  ,
+    clrnew=clr;
+  );
+  clrnew;
+);
+PaO():=PaO("");
+PaO(Arg):=(
+  regional(out);
+  if(isstring(Arg),
+    out="("+Arg;
+  ,
+    out="";
+    repeat(Arg,
+      out=out+"(";
+    );
+  );
+  out;
+);
+Norm(v1):=(  // 16.09.01
+  regional(out,tmp,tmp1,tmp2);
+  out=0;
+  forall(1..(length(v1)),
+    out=out+(v1_#)^2;
+  );
+  out=sqrt(out);
+  out;
+);
+Norm(v1,v2):=(
+  Norm(v2-v1);
+);
+Measuredepth(list):=( //190423
+  regional(str,nn,tmp,tmp1,tmp2);
+  str=text(list);
+  tmp1=Indexall(str,"[");
+  tmp2=select(tmp1,!contains(tmp1,#+1));
+  nn=tmp2_1;
+  tmp1=substring(str,nn,length(str));
+  tmp=indexof(tmp1,",");
+  tmp1=substring(tmp1,0,tmp-1);
+  if(!ispoint(parse(tmp1)),
+    nn=nn-1;
+  );
+  nn;
+);
+Pcrd(pt):=(
+  regional(tmp);
+  if(ispoint(pt),
+    tmp=pt.xy;
+  ,
+    tmp=[pt_1*SCALEX,pt_2*SCALEY];
+  );
+ re(tmp); //191231
+);
+Getlinestyle(str,name):=(
+  regional(noflg,tmp,tmp1,tmp2,Dop,Ltype,subflg);
+  Ltype=-1;
+  Dop="";
+  tmp1=indexof(str,",");
+  if(tmp1>0,
+    Dop=","+substring(str,tmp1,length(str));
+  );
+  noflg=parse(substring(str,0,1));
+  if(substring(name,0,3)=="sub",subflg=1,subflg=0);  // 16.02.29
+  if(noflg<=1, //1900818from
+    tmp1=Toupper(substring(str,1,3));
+  ,
+    tmp1="NO";
+  ); //1900818to
+  tmp2=""; //190119from
+  tmp=indexof(str,",");
+  if(tmp>0,
+    tmp2=substring(str,tmp,length(str));
+  ); //190119to
+  if(tmp1=="DR",
+    if(length(tmp2)==0,tmp2="1"); //190125
+    Ltype=[0,tmp2];  //190119
+    if(noflg==0 & subflg==0, // 16.02.29
+    );
+  );
+  if(tmp1=="DA",
+    if(length(tmp2)==0,tmp2="1,1"); //190125
+    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
+    Ltype=[1,tmp2];  //190119
+    if(noflg==0 & subflg==0, // 16.02.29
+    );
+  );
+  if(tmp1=="ID",
+    if(length(tmp2)==0,tmp2="1,1"); //190125
+    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
+    Ltype=[2,tmp2];  //190119
+    if(noflg==0 & subflg==0, // 16.02.29
+    );
+  );
+  if(tmp1=="DO",
+    if(length(tmp2)==0,tmp2="1,1"); //190125
+    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
+    Ltype=[3,tmp2];  //190119
+    if(noflg==0 & subflg==0, // 16.02.29
+    );
+  );
+  if(tmp1=="DP",
+    if(length(tmp2)==0,tmp2="1"); //190125
+    Ltype=[0,tmp2];  //190119
+    tmp1=parse(name);
+    tmp2="";
+    forall(tmp1,
+      tmp2=tmp2+Textformat(#_1,5)+",";
+    );
+    tmp2=substring(tmp2,0,length(tmp2)-1);
+    if(noflg==0,
+    );
+  );
+  if(tmp1=="NO", //190818from
+    Ltype=[-1,"0"];
+  );  //190818to
+  Ltype;
+);
+Drwexpr(pos,str):=Drwexpr(pos,str,[]);
+Drwexpr(pos,str,Arg):=(
+  regional(sz,clr);
+  if(!islist(Arg),sz=Arg;clr=[0,0,0],sz=12;clr=Arg);
+  Drwexpr(pos,str,sz,clr);
+);
+Drwexpr(pos,str,sz,clr):=(
+  regional(tmp);
+  if(!isstring(str),tmp=text(str),tmp=str);
+  drawtext(pos,"$"+tmp+"$",size->sz,color->clr);
+);
 Ketinit():=Ketinit("fig",0.3); //190831from
 Ketinit(Arg):=(//181001from
   if(isstring(Arg),
@@ -522,21 +1049,6 @@ Setwindow(xrange,yrange,msg):=(
   Ptpos(NE,Pcrd([XMAX,YMAX]));
   Strictmove("SW"); Strictmove("NE");
 );
-Toupper(str):=(
-  regional(alphabet,out,tmp,tmp1);
-  alphabet="abcdefghijklmnopqrstuvwxyz";
-  out="";
-  forall(1..(length(str)),
-    tmp=substring(str,#-1,#);
-    tmp1=indexof(alphabet,tmp);
-    if(tmp1>0,
-      out=out+unicode(text(tmp1+64),base->10);
-    ,
-      out=out+tmp;
-    );
-  );
-  out;
-);
 LLcrd(pt):=(
   regional(tmp);
   if(ispoint(pt),
@@ -573,15 +1085,6 @@ Ptpos(ptorg,pos):=(
   );
   out;
 );
-Pcrd(pt):=(
-  regional(tmp);
-  if(ispoint(pt),
-    tmp=pt.xy;
-  ,
-    tmp=[pt_1*SCALEX,pt_2*SCALEY];
-  );
- re(tmp); //191231
-);
 Strictmove(pC):=Strictmove(pC,StrictSep); //190831
 Strictmove(pCorg,sep):=(
   regional(pC,tmp,tmp1,tmp2);
@@ -603,28 +1106,6 @@ Strictmove(pCorg,sep):=(
     );
   );
 );
-Addax(param):=(
-  ADDAXES=text(param);
-);
-Textedit(no):=(
-  regional(tmp,tmp1,tmp2);
-  tmp="Text"+text(no)+".currenttext";
-  tmp1=parse(tmp);
-  tmp1;
-);
-Textedit(n0,str):=Textedit(n0,str,"="); //210406from
-Textedit(n0,str,sep):=( //210208from
-  regional(tmp,tmp1,tmp2,out);
-  tmp1=str;
-tmp1=Textedit(n0); //
-  tmp2=tmp1;
-  if(length(sep)>0,
-    tmp=Strsplit(sep+tmp1,sep);
-    tmp2=tmp_(-1);
-  ); //210406to
-  if(length(tmp2)==0,out=str,out=tmp2);
-  out;
-); //210208to
 Subsedit(no,str):=(
  regional(tmp,tmp1);
  if(isstring(str),
@@ -840,173 +1321,6 @@ drawtext(org-4*[tmp1,tmp2],ax_6,size->tmp);//
     Addax(0);
   );
 );
-Divoptions(options):=(
-  regional(Ltype,Noflg,Inflg,Outflg,eqL,realL,strL,
-      color,opstr,opcindy,flg,tmp,tmp1,tmp2);
-  Ltype="dr";  // 2015.01.13
-  Noflg=0;
-  Inflg=0;
-  Outflg=0;
-  eqL=[];
-  realL=[];
-  strL=[];
-  color=Colorcmyk2rgb(KCOLOR); //200513
-  opstr="";
-  opcindy="";
-  forall(options,
-    flg=0;
-    if(flg==0,
-      if(isreal(#) % ispoint(#) % islist(#),
-        realL=append(realL,#);
-        opstr=opstr+","+text(#);
-        flg=1;
-      );
-    );
-    if(flg==0,
-      if(indexof(#,"=")>0,
-        tmp=Strsplit(#,"="); //180602from
-        tmp1=Toupper(tmp_1);
-        tmp2=tmp_2;
-        if(tmp1=="COLOR",
-          if(indexof(tmp2,"[")>0, //180928
-            tmp1=parse(tmp2);
-            color=tmp1;
-            if(length(tmp1)==4,
-              tmp1=Colorcmyk2rgb(tmp1);
-            );
-          ,
-            color=Colorname2cmyk(tmp2);//200425
-            tmp1=Colorcmyk2rgb(color); ;//200425
-          );
-          tmp="color->"+text(tmp1);
-          opcindy=opcindy+","+tmp;
-        ,
-          eqL=append(eqL,#);
-        );//180602to
-        flg=1; 
-      );
-    );
-    if(flg==0,
-      if(indexof(#,"no")+indexof(#,"No")>0,
-        if(indexof(#,"tex")>0,Noflg=1);
-        if(indexof(#,"disp")>0,Noflg=2);
-        if(indexof(#,"data")>0,Noflg=3);
-        flg=1;
-      );
-    );
-    if(flg==0,
-      if(indexof(#,"->")>0,
-        opcindy=opcindy+","+#;
-        flg=1; 
-      );
-    );
-    if(flg==0,
-      if(indexof(#,"out")+indexof(#,"Out")>0,
-        if(indexof(#,"-")==0,
-          Outflg=1;
-        ,
-          Outflg=2;
-        );
-        flg=1;
-      );
-    );
-    if(flg==0,
-      if(indexof(#,"in")+indexof(#,"In")>0,
-        if(indexof(#,"-")==0,
-          Inflg=1;
-        ,
-          Inflg=2;
-        );
-        flg=1;
-      );
-    );
-    if(flg==0,
-      tmp=substring(#,0,2);
-      tmp1=indexof(tmp,"dr")+indexof(tmp,"Dr");
-      tmp1=tmp1+indexof(tmp,"da")+indexof(tmp,"Da");
-      tmp1=tmp1+indexof(tmp,"id")+indexof(tmp,"Id");
-      tmp1=tmp1+indexof(tmp,"do")+indexof(tmp,"Do");
-      tmp1=tmp1+indexof(tmp,"dp")+indexof(tmp,"Dp");
-      if(tmp1>0,
-        Ltype=#;
-        flg=1;
-      );
-      if(flg==0,
-        if(length(#)>0, //180408
-          strL=append(strL,#);
-          opstr=opstr+","+Dq+#+Dq;
-        );
-      );
-    );
-  );
-  if(indexof(opcindy,"color->")==0,// 16.10.07from
-    tmp=Colorcmyk2rgb(KCOLOR); //200513[2lines]
-    opcindy=opcindy+",color->"+text(tmp);
-  );
-  [Ltype,Noflg,Inflg,Outflg,eqL,realL,strL,color,opstr,opcindy];
-);
-Colorname2cmyk(name):=( //181212
-  regional(dL,code,tmp);
-  dL=[
-    ["greenyellow",[0.15,0,0.69,0]],["yellow",[0,0,1,0]],
-    ["goldenrod",[0,0.1,0.84,0]],["dandelion",[0,0.29,0.84,0]],
-    ["apricot",[0,0.32,0.52,0]],["peach",[0,0.5,0.7,0]],
-    ["melon",[0,0.46,0.5,0]],["yelloworange",[0,0.42,1,0]],
-    ["orange",[0,0.61,0.87,0]],["burntorange",[0,0.51,1,0]],
-    ["bittersweet",[0,0.75,1,0.24]],["redorange",[0,0.77,0.87,0]],
-    ["mahogany",[0,0.85,0.87,0.35]],["maroon",[0,0.87,0.68,0.32]],
-    ["brickred",[0,0.89,0.94,0.28]],["red",[0,1,1,0]],
-    ["orangered",[0,1,0.5,0]],["rubinered",[0,1,0.13,0]],
-    ["wildstrawberry",[0,0.96,0.39,0]],["salmon",[0,0.53,0.38,0]],
-    ["carnationpink",[0,0.63,0,0]],["magenta",[0,1,0,0]],
-    ["violetred",[0,0.81,0,0]],["rhodamine",[0,0.82,0,0]],
-    ["mulberry",[0.34,0.9,0,0.02]],["redviolet",[0.07,0.9,0,0.34]],
-    ["fuchsia",[0.47,0.91,0,0.08]],["lavender",[0,0.48,0,0]],
-    ["thistle",[0.12,0.59,0,0]],["orchid",[0.32,0.64,0,0]],
-    ["darkorchid",[0.4,0.8,0.2,0]],["purple",[0.45,0.86,0,0]],
-    ["plum",[0.5,1,0,0]],["violet",[0.79,0.88,0,0]],
-    ["royalpurple",[0.75,0.9,0,0]],["blueviolet",[0.86,0.91,0,0.04]],
-    ["periwinkle",[0.57,0.55,0,0]], ["cadetblue",[0.62,0.57,0.23,0]],
-    ["cornflowerblue",[0.65,0.13,0,0]],
-    ["midnightblue",[0.98,0.13,0,0.43]],
-    ["navyblue",[0.94,0.54,0,0]],["royalblue",[1,0.5,0,0]],
-    ["blue",[1,1,0,0]],["cerulean",[0.94,0.11,0,0]],
-    ["cyan",[1,0,0,0]],["processblue",[0.96,0,0,0]],
-    ["skyblue",[0.62,0,0.12,0]],["turquoise",[0.85,0,0.2,0]],
-    ["tealblue",[0.86,0,0.34,0.02]],["aquamarine",[0.82,0,0.3,0]],
-    ["bluegreen",[0.85,0,0.33,0]],["emerald",[1,0,0.5,0]],
-    ["junglegreen",[0.99,0,0.52,0]],["seagreen",[0.69,0,0.5,0]],
-    ["green",[1,0,1,0]],["forestgreen",[0.91,0,0.88,0.12]],
-    ["pinegreen",[0.92,0,0.59,0.25]],["limegreen",[0.5,0,1,0]],
-    ["yellowgreen",[0.44,0,0.74,0]],["springgreen",[0.26,0,0.76,0]],
-    ["olivegreen",[0.64,0,0.95,0.4]],["rawsienna",[0,0.72,1,0.45]],
-    ["sepia",[0,0.83,1,0.7]],["brown",[0,0.81,1,0.6]],
-    ["tan",[0.14,0.42,0.56,0]],["gray",[0,0,0,0.5]],
-    ["lightgray",[0,0,0,0.15]], //190429,0809
-    ["cindycolor",[0.125,0.083,0,0.247]], //201027
-    ["black",[0,0,0,1]],["white",[0,0,0,0]],
-    ["offwhite",[0,0,0,0.03]] //190809
-  ];
-  tmp=select(dL,#_1==name);
-  if(length(tmp)>0,
-    tmp=tmp_1;
-    code=tmp_2;
-  ,
-    println("    "+name+" not found");
-    code=Assign(name); //190323
-  );
-);
-Colorcmyk2rgb(clr):=(
-  regional(clrnew,tmp,black);
-  if(length(clr)==4,  //200618
-    black=clr_4;
-    tmp=apply(clr,1-min(1,#*(1-black)+black));
-    clrnew=tmp_(1..3);
-  ,
-    clrnew=clr;  //200618
-  );
-  clrnew;
-);
 Arrowdataseg(ptlist):=Arrowdataseg(ptlist,[]); //181110from
 Arrowdataseg(Arg1,Arg2):=(
   regional(name);
@@ -1175,86 +1489,6 @@ Listplot(nm,list,options):=(
   tmp1=apply(list,Lcrd(#));
   tmp1;
 );
-Colorrgb2cmyk(clr):=(
-  regional(clrnew,tmp,black);
-  if(length(clr)==3, //200618
-    tmp=apply(clr,1-#);
-    black=min(tmp);
-    if(black!=1, //181112from
-      tmp=apply(clr,(1-#-black)/(1-black));
-      clrnew=append(tmp,black);
-    ,
-      clrnew=[0,0,0,1];  //200618
-    ); //181112to
-  ,
-    clrnew=clr;
-  );
-  clrnew;
-);
-Getlinestyle(str,name):=(
-  regional(noflg,tmp,tmp1,tmp2,Dop,Ltype,subflg);
-  Ltype=-1;
-  Dop="";
-  tmp1=indexof(str,",");
-  if(tmp1>0,
-    Dop=","+substring(str,tmp1,length(str));
-  );
-  noflg=parse(substring(str,0,1));
-  if(substring(name,0,3)=="sub",subflg=1,subflg=0);  // 16.02.29
-  if(noflg<=1, //1900818from
-    tmp1=Toupper(substring(str,1,3));
-  ,
-    tmp1="NO";
-  ); //1900818to
-  tmp2=""; //190119from
-  tmp=indexof(str,",");
-  if(tmp>0,
-    tmp2=substring(str,tmp,length(str));
-  ); //190119to
-  if(tmp1=="DR",
-    if(length(tmp2)==0,tmp2="1"); //190125
-    Ltype=[0,tmp2];  //190119
-    if(noflg==0 & subflg==0, // 16.02.29
-    );
-  );
-  if(tmp1=="DA",
-    if(length(tmp2)==0,tmp2="1,1"); //190125
-    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
-    Ltype=[1,tmp2];  //190119
-    if(noflg==0 & subflg==0, // 16.02.29
-    );
-  );
-  if(tmp1=="ID",
-    if(length(tmp2)==0,tmp2="1,1"); //190125
-    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
-    Ltype=[2,tmp2];  //190119
-    if(noflg==0 & subflg==0, // 16.02.29
-    );
-  );
-  if(tmp1=="DO",
-    if(length(tmp2)==0,tmp2="1,1"); //190125
-    if(indexof(tmp2,",")==0,tmp2=tmp2+",1"); //200911
-    Ltype=[3,tmp2];  //190119
-    if(noflg==0 & subflg==0, // 16.02.29
-    );
-  );
-  if(tmp1=="DP",
-    if(length(tmp2)==0,tmp2="1"); //190125
-    Ltype=[0,tmp2];  //190119
-    tmp1=parse(name);
-    tmp2="";
-    forall(tmp1,
-      tmp2=tmp2+Textformat(#_1,5)+",";
-    );
-    tmp2=substring(tmp2,0,length(tmp2)-1);
-    if(noflg==0,
-    );
-  );
-  if(tmp1=="NO", //190818from
-    Ltype=[-1,"0"];
-  );  //190818to
-  Ltype;
-);
 Lcrd(pt):=(
   regional(tmp);
   if(ispoint(pt),
@@ -1264,19 +1498,8 @@ Lcrd(pt):=(
   );
   re(tmp); //191231
 );
-Measuredepth(list):=( //190423
-  regional(str,nn,tmp,tmp1,tmp2);
-  str=text(list);
-  tmp1=Indexall(str,"[");
-  tmp2=select(tmp1,!contains(tmp1,#+1));
-  nn=tmp2_1;
-  tmp1=substring(str,nn,length(str));
-  tmp=indexof(tmp1,",");
-  tmp1=substring(tmp1,0,tmp-1);
-  if(!ispoint(parse(tmp1)),
-    nn=nn-1;
-  );
-  nn;
+Addax(param):=(
+  ADDAXES=text(param);
 );
 Ketcindyjsfigure=0;
 Ketcindyjsscale=1;
@@ -1285,23 +1508,276 @@ setdirectory(Dircdy);
 
 
 
+
+
 LogData="";
-StartTime=0;
 QuesDataHead="";
 QuesData="";
 QuesNo=0;
-NewLearn=1;
-NewQues=1;
-EndQues=0;
+StartTime=0;
 
 newflg=1;
 quesflg=0;
-quesready=0;
-quesfin=1;
 scoreflg=0;
 scorefin=0;
+Scorectr=0;
 recordflg=0;
-recordfin=0;
+quesgiven=0;
+quesnew=0;
+Msgnew=[];
+Msgques=[];
+Msgsc=[];
+
+Confirmstudent(st,Students):=(
+  regional(numL,nsL,nn,kk,nstr,conf,tmp,tmp1);
+  numL=apply(0..9,text(#));
+  nsL=[];
+  forall(1..(length(Students)),nn,
+    tmp1=Students_nn;
+    nstr="";
+    kk=1;
+    while(kk<=length(tmp1),
+      tmp=st_(kk);
+      if(contains(numL,tmp),
+        nstr=nstr+tmp;
+        kk=kk+1;
+      ,
+        kk=length(tmp1)+1;
+      );
+    );
+    nsL=append(nsL,parse(nstr));
+  );
+  nstr="";
+  kk=1;
+  while(kk<=length(st),
+    tmp=st_(kk);
+    if(contains(numL,tmp),
+      nstr=nstr+tmp;
+      kk=kk+1;
+    ,
+      kk=length(st)+1;
+    );
+  );
+  nn=parse(nstr);
+  if(contains(nsL,nn),
+    tmp=select(1..(length(nsL)),nsL_#==nn);
+    tmp=tmp_1;
+    conf=Studentls_tmp;
+  ,
+    conf="";
+  );
+  conf;
+);
+
+Newsession(editno,pos):=Newsession(editno,"",pos,18,[]);
+Newsession(editno,Arg1,Arg2):=(
+  if(islist(Arg1),
+    Newsession(editno,"",Arg1,Arg2,[]);
+  ,
+    Newsession(editno,Arg1,Arg2,18,[]);
+  );  
+);
+Newsession(editno,Arg1,Arg2,Arg3):=(
+  if(islist(Arg3),
+    Newsession(editno,"",Arg1,Arg2,18,Arg3);
+  ,
+    Newsession(editno,Arg1,Arg2,Arg3,[]);
+  );  
+);
+Newsession(editno,noinput,pos,size,studentL):=(
+  regional(st,tmp,conf,ctr,msg);
+  conf="ok";
+  if(newflg==1,
+    st=Textedit(editno,noinput);
+    if(length(st)==0,
+       conf="no";
+       msg=["IDを入力",pos,size,[0,0,1]];
+    ,
+      if(length(studentL)>0,
+        conf=Confirmstudent(st,StudentL);
+        if(length(conf)>0,
+          st=conf;
+          Subsedit(editno,"ID="+st);
+          conf="ok";
+        ,
+          msg=["ID未確認",pos,size,[1,0,0]];
+          oonf="unknown";
+        );
+      );
+    );
+  );
+  if(conf=="ok",
+    msg=["確認",pos,size,[0,0,1]];
+  );
+  msg;
+);
+
+Startlearning(editno):=(
+  regional(stname);
+  stname=Textedit(editno,"noname");
+  LogData=stname+";;"+Getcurtime();
+  LogData;
+);
+
+Startquestion(question,correct):=(
+  regional(no,ex,ca);
+  StartTime=Counttime();
+  QuesNo=QuesNo+1; //210424
+  no=text(QuesNo);
+  Scorectr=1;
+  ex=question;
+  if(!isstring(ex),ex=text(ex));
+  ca=correct;
+  if(!isstring(ca),ca=text(ex));
+  QuesDataHead=no+";;"+ex+";;"+ca;
+  QuesDataHead;
+);
+
+Makequesdata(stans,stscore):=(
+  regional(ans,score,tm);
+  ans=stans;
+  if(!isstring(ans),ans=text(ans));
+  score=stscore;
+  if(!isstring(score),score=text(score));
+  QuesData=QuesDataHead+";;"+ans+";;"+score;
+  tm=Counttime()-StartTime;
+  QuesData=QuesData+";;"+text(tm);
+  if(Scorectr>0,
+    QuesData=QuesData+";;"+text(Scorectr);
+  );
+  Scorectr=Scorectr+1;
+  QuesData;
+);
+
+Endquestion(studentans,studentscore):=(
+  regional(ans,score,tm);
+  if(EndQues==0,
+    ans=studentans;
+    if(!isstring(ans),ans=text(ans));
+    score=studentscore;
+    if(!isstring(score),score=text(score));
+    QuesData=QuesData+";;"+ans+";;"+score;
+    tm=Counttime()-StartTime;
+    QuesData=QuesData+";;"+text(tm);
+    EndQues=1;
+  );
+);
+
+Updatelog():=(
+  regional(tmp,tmp1,tmp2);
+  if(length(QuesData)>0,
+    tmp=tokenize(LogData,"||");
+    if(length(tmp)>1,
+      tmp1=tmp_(-1);
+      tmp2=tmp_(1..(length(tmp)-1));
+      tmp=tokenize(tmp1,";;");
+      tmp=tmp_1;
+      if(tmp==QuesNo, //210425a
+        LogData=tmp2_1;
+        forall(2..(length(tmp2)),
+          LogData=LogData+"||"+tmp2_#;
+        );
+      );
+    );
+    LogData=LogData+"||"+QuesData;
+  );
+  LogData;
+);
+
+Dispquesno(pos):=Dispquesno(pos,18,[0,0,0]);
+Dispquesno(pos,size):=Dispquesno(pos,size,[0,0,0]);
+Dispquesno(pos,size,rgb):=(
+  regional(msg);
+  msg=[Assign("N",["N",QuesNo]),pos,size,rgb];
+  msg;
+);
+
+Displetters(msgLorg):=(
+  regional(msgL,pos,str,size,color);
+  msgL=msgLorg;
+  if(length(msgL)>0,
+    if(isstring(msgL_1),msgL=[msgL]);
+    forall(msgL,
+      pos=#_2;
+      str=#_1;
+      if(length(#)>2,size=#_3,size=16);
+      if(length(#)>3,color=#_4,color=[0,0,0]); 
+      drawtext(pos,str,size->size,color->color);
+    );
+  );
+);
+
+Dispexprs(msgLorg):=(
+  regional(msgL,pos,str,size,color);
+  msgL=msgLorg;
+  if(length(msgL)>0,
+    if(isstring(msgL_1),msgL=[msgL]);
+    forall(msgL,
+      pos=#_2;
+      str="$"+#_1+"$";
+      if(length(#)>2,size=#_3,size=16);
+      if(length(#)>3,color=#_4,color=[0,0,0]);    
+      drawtext(pos,str,size->size,color->color);
+    );
+  );
+);
+
+Displetterlist(list):=(
+  forall(list,
+    Displetters(#);
+  );
+);
+
+Dispexprlist(list):=(
+  forall(list,
+    Dispexprs(#);
+  );
+);
+
+Log2csv(dt):=(
+  regional(cL,dL,out,nn,tmp,tmp1,tmp2);
+  cL=[];
+  dL=tokenize(dt,"||");
+  tmp=dL_1;
+  tmp1=tokenize(tmp,";;");
+  tmp=Returndatetime(tmp1_2);
+  out=tmp1_1+","+tmp_1+","+tmp_2;
+  forall(2..(length(dL)),nn,
+    tmp1=tokenize(dL_nn,";;");
+    tmp2=text(tmp1_1)+",";
+    forall(2..(length(tmp1)),
+      tmp=tmp1_#;
+      if(!isstring(tmp),tmp=text(tmp));
+      if(indexof(tmp,",")>0,tmp=Dqq(tmp));
+      tmp2=tmp2+tmp;
+      if(#<length(tmp1),tmp2=tmp2+",");
+    );
+    out=out+","+tmp2;
+  );
+  out;
+);
+
+Csvtext():=Csvtext("alltext");
+Csvtext(fname):=(
+  regional(tmp,tmp1,tL,numL,tnL,fid);
+  tmp=allelements();
+  tmp1=allpoints();
+  tL=remove(tmp,tmp1);
+  numL=apply(tL,replace(#.name,"Text",""));
+  numL=apply(numL,replace(#,"''",".2"));
+  numL=apply(numL,replace(#,"'",".1"));
+  numL=apply(numL,if(length(#)==0,"-1",#));
+  numL=apply(numL,parse(#));
+  tnL=apply(1..(length(numL)),
+     [numL_#,inspect(tL_#,"name"),inspect(tL_#,"text.text")]);
+  tnL=sort(tnL,[#_1]);
+  fid=openfile(fname+".csv");
+  forall(tnL,
+   println(fid,#_1+","+#_2+","+#_3);
+  );
+  closefile(fid);
+  println("generate "+fname+".csv");
+);
 
 Getcurtime():=Getcurtime(date(),time());
 Getcurtime(ymd,hms):=(
@@ -1345,180 +1821,9 @@ Returntime(timedata):=(
   out;
 );
 
-Startlearning(studentname):=(
-  regional(st);
-  st=studentname;
-  if(length(st)==0,st="noname");
-  LogData=st+";;"+Getcurtime();
-);
-
-Startquestion(question,correct):=(
-  regional(no,ex,ca);
-  StartTime=Counttime();
-  QuesNo=QuesNo+1; //210424
-  no=text(QuesNo);
-  ex=question;
-  if(!isstring(ex),ex=text(ex));
-  ca=correct;
-  if(!isstring(ca),ca=text(ex));
-  QuesDataHead=no+";;"+ex+";;"+ca;
-);
-
-Makequesdata(stans,stscore):=Makequesdata(stans,stscore,0);
-Makequesdata(stans,stscore,ctr):=(
-  regional(ans,score,tm);
-  ans=stans;
-  if(!isstring(ans),ans=text(ans));
-  score=stscore;
-  if(!isstring(score),score=text(score));
-  QuesData=QuesDataHead+";;"+ans+";;"+score;
-  tm=Counttime()-StartTime;
-  QuesData=QuesData+";;"+text(tm);
-  if(ctr>0,
-    QuesData=QuesData+";;"+text(ctr);
-  );
-);
-
-Endquestion(studentans,studentscore):=(
-  regional(ans,score,tm);
-  if(EndQues==0,
-    ans=studentans;
-    if(!isstring(ans),ans=text(ans));
-    score=studentscore;
-    if(!isstring(score),score=text(score));
-    QuesData=QuesData+";;"+ans+";;"+score;
-    tm=Counttime()-StartTime;
-    QuesData=QuesData+";;"+text(tm);
-    EndQues=1;
-  );
-);
-
-Updatelog():=(
-  regional(tmp,tmp1,tmp2);
-  if(length(QuesData)>0,
-    tmp=tokenize(LogData,"||");
-    if(length(tmp)>1,
-      tmp1=tmp_(-1);
-      tmp2=tmp_(1..(length(tmp)-1));
-      tmp=tokenize(tmp1,";;");
-      tmp=tmp_1;
-      if(tmp==QuesNo, //210425a
-        LogData=tmp2_1;
-        forall(2..(length(tmp2)),
-          LogData=LogData+"||"+tmp2_#;
-        );
-      );
-    );
-    LogData=LogData+"||"+QuesData;
-  );
-);
-
-Log2csv(dt):=(
-  regional(cL,dL,out,nn,tmp,tmp1,tmp2);
-  cL=[];
-  dL=tokenize(dt,"||");
-  tmp=dL_1;
-  tmp1=tokenize(tmp,";;");
-  tmp=Returndatetime(tmp1_2);
-  out=tmp1_1+","+tmp_1+","+tmp_2;
-  forall(2..(length(dL)),nn,
-    tmp1=tokenize(dL_nn,";;");
-    tmp2=text(tmp1_1)+",";
-    forall(2..(length(tmp1)),
-      tmp=tmp1_#;
-      if(!isstring(tmp),tmp=text(tmp));
-      if(indexof(tmp,",")>0,tmp=Dqq(tmp));
-      tmp2=tmp2+tmp;
-      if(#<length(tmp1),tmp2=tmp2+",");
-    );
-    out=out+","+tmp2;
-  );
-  out;
-);
-
-Displetters(msgLorg):=(
-  regional(msgL,pos,str,size,color);
-  msgL=msgLorg;
-  if(length(msgL)>0,
-    if(isstring(msgL_1),msgL=[msgL]);
-    forall(msgL,
-      pos=#_2;
-      str=#_1;
-      if(length(#)>2,size=#_3,size=16);
-      if(length(#)>3,color=#_4,color=[0,0,0]); 
-      drawtext(pos,str,size->size,color->color);
-    );
-  );
-);
-
-Dispexprs(msgLorg):=(
-  regional(msgL,pos,str,size,color);
-  msgL=msgLorg;
-  if(length(msgL)>0,
-    if(isstring(msgL_1),msgL=[msgL]);
-    forall(msgL,
-      pos=#_2;
-      str="$"+#_1+"$";
-      if(length(#)>2,size=#_3,size=16);
-      if(length(#)>3,color=#_4,color=[0,0,0]);    
-      drawtext(pos,str,size->size,color->color);
-    );
-  );
-);
-
-Confirmstudent(st,Students):=(
-  regional(out,tmp,tmp1);
-  if(length(st)==1,st="0"+st);
-  tmp=substring(st,0,2);
-  tmp1=select(Students,indexof(#,tmp)>0);
-  if(length(tmp1)==0,
-    if(st=="noname",
-      out=[1,"番号入力",""];
-    ,
-      out=[2,"番号違い",""];
-    );
-  ,
-    tmp1=tmp1_1;
-    out=[0,"OK=>",tmp1];
-  );
-  out;
-);
-
-Csvtext():=Csvtext("alltext");
-Csvtext(fname):=(
-  regional(tmp,tmp1,tL,numL,tnL,fid);
-  tmp=allelements();
-  tmp1=allpoints();
-  tL=remove(tmp,tmp1);
-  numL=apply(tL,replace(#.name,"Text",""));
-  numL=apply(numL,replace(#,"''",".2"));
-  numL=apply(numL,replace(#,"'",".1"));
-  numL=apply(numL,if(length(#)==0,"-1",#));
-  numL=apply(numL,parse(#));
-  tnL=apply(1..(length(numL)),
-     [numL_#,inspect(tL_#,"name"),inspect(tL_#,"text.text")]);
-  tnL=sort(tnL,[#_1]);
-  fid=openfile(fname+".csv");
-  forall(tnL,
-   println(fid,#_1+","+#_2+","+#_3);
-  );
-  closefile(fid);
-  println("generate "+fname+".csv");
-);
-
-
-Newlesson(st):=(
-  regional(pP,flg);
-  pP=[0.5,3.8];
-  if(length(st)==0,
-    Msgnew=["IDを入力",pP,20,[0,0,1]];
-  ,
-    Msgnew=["出題を押す",pP,20,[0,0,1]];
-    quesnew=1;
-    quesgiven=0;
-    newflg=0;
-  );
-);
+Id=51;
+Rec=59;
+Que=[10,11,12];
 
 
 Deformtex(frm):=(
@@ -1535,10 +1840,9 @@ Deformtex(frm):=(
   tfrm;
 );
 
-Makeques():=(
+Makeques(pQ,size,color):=(
   regional(a1,a2,a3,b,c,d,eq1,
-      flg,frm,cfrm,tmp,pQ);
-  pQ=[-9,3.8];
+      Ex,Ca,msg,flg,frm,cfrm,tmp);
   a1=0; a2=0; a3=0;
   frm="";
   a1=4-randomint(8);
@@ -1547,125 +1851,137 @@ Makeques():=(
   b=-(a1+a2+a3);
   c=a1*a2+a2*a3+a3*a1;
   d=-a1*a2*a3;
-  frm=Assign("x^3+b*x^2+c*x+d=0",["b",text(b),"c",text(c),"d",text(d)]);
- cfrm=Tocindyform(frm);
-  Subsedit(10,"");
-  Subsedit(11,"");
-  Subsedit(12,"");
+  eq1=Assign("x^3+b*x^2+c*x+d=0",["b",b,"c",c,"d",d]);
+  frm=Assign("x^3+b*x^2+c*x+d=0",
+       ["b",text(b),"c",text(c),"d",text(d)]);
+  cfrm=Tocindyform(frm);
+  cfrm=replace(cfrm,"+-","-");
+  forall(Que, Subsedit(#,""));
   tfrm=Deformtex(frm);
-  Msgques=[
-    ["("+text(QuesNo+1)+") "+"$"+ tfrm +"$",pQ,20],
+  msg=[
+    ["$"+tfrm+"$",pQ,20],
     ["解$x$は",pQ+[0.2,-1],20]
   ];
   Msghint=[];
   Msgsc=[];
-  Scorectr=1;
+  scorectr=1;
   quesgiven=1;
   quesnew=0;
   tipsflag=0;
   Ex=cfrm;
   tmp=sort([a1,a2,a3]);
   Ca=text(tmp);
+  [Ex,Ca,msg];
 );
 
-Scoring():=(
-  regional(st,tmp,tmp1,tmp2,tmp3);
-  tmp1=Textedit(10,"");
-  tmp2=Textedit(11,"");
-  tmp3=Textedit(12,"");
-  tmp=[tmp1,tmp2,tmp3];
-  Stans=text(tmp);
-  if(length(tmp1)*length(tmp2)*length(tmp3)>0,
-    st=apply(tmp,parse(#));
-    st=sort(st);
-    st=text(st);
-   	if(Ca==st,
-      Score=1;
-      Msgsc=["正解",pB,20];
+Scoring(Ca):=(
+  regional(pB,st,stans,score,tmp,tmp1);
+  pB=[-13,-1];
+  tmp=[];
+  forall(Que,
+    tmp1=textedit(#,"");
+    tmp=append(tmp,tmp1);
+  );
+  stans=text(tmp);
+  if(length(tmp_1)*length(tmp_2)*length(tmp_3)>0,
+    tmp=apply(tmp,parse(#));
+    tmp=sort(tmp);
+    st=text(tmp);
+    if(Ca==st,
+      score=1;
+      Msgsc=["正解",pB,20,[0,0,0]];
     ,
-      Score=0;
-      Msgsc=["不正解",pB,20];
+      score=0;
+      Msgsc=["不正解",pB,20,[1,0,0]];
     );
   ,
-    Score=-1;
-    Msgsc=["未入力",pB,20];
+    score=-1;
+    Msgsc=["未入力",pB,20,[0,0,1]];
   );
+  [stans,score];
 );
 
-Msghint=[];
-Msggues=[];
-Msgsc=[];
+Drawgraph(Ex,pos,size):=(
+  regional(fun,tmp);
+  tmp=Strsplit(Ex,"=");
+  fun=tmp_1;
+  Plotdata("1",fun,"x",["Color=blue"]);
+  fun=Deformtex(fun);
+  Drwexpr(pos,"y="+fun,size);
+);
 
-pB=[-9,-1];
-
-Msgtest=[];
-
-newflg=1;
-quesflg=0;
-quesgiven=0;
-quesnew=0;
-scoreflg=0;
-scorefin=0;
-Scorectr=0;
-recordflg=0;
-recordfin=0;
 
 frm="";
 cfrm="";
 
+Msgnew=[];
+Msghint=[];
+Msggues=[];
+Msgsc=[];
+
+graphflg=0;
+
+Msgtest=[];
+
+
+Msgtest=[];
+sta=[];
 ;
 </script>
 <script id="csdraw" type="text/x-cindyscript">
 Ketinit();
-Addax(0);
-
 if(newflg==1,
-  st=Textedit(51,"");
-  Newlesson(st);
+  pos=[-7.8,3.8];
+  Msgnew=Newsession(Id,"",pos,20);
+  if(confirmflg==1,
+    Msgnew=["出題=>",pos,20,[0,0,1]];
+    Startlearning(Id);
+    newflg=0;
+    quesnew=1;
+    confirmflg=0;
+  );
 );
-
 
 if(quesflg==1,
   if(quesnew==1,
+    Subsedit(Rec,"");
     Msgnew=[];
-    Makeques();
-    Startquestion(Ex,Ca);
-    quesgiven=1;
-    quesnew=0;
-  );
+    out=Makeques([-13,2.8],20,[0,0,0]);
+    Ex=out_1; Ca=out_2;
+    Msgques=out_3;
+    Startquestion(out_1,out_2);
+  );  
   quesflg=0;
 );
 
 if(tipsflag==1,
   ans=parse(Ca);
-  Msghint=["ヒント：解の１つは  $x="+text(ans_1)+"$",pB-[0,1],20];
+  Msghint=["ヒント：解の１つは  $x="+text(ans_1)+"$",[-13,-2],20];
+  tipsflag=0;
+);
+
+if(graphflg==1,
+  Drawgraph(Ex,[-3,4.5],18);
 );
 
 if(scoreflg==1,
-  if(Scorectr>0,
-    Scoring();
-    Makequesdata(Stans,Score,Scorectr);
-    Scorectr=Scorectr+1;
-    scorefin=1;
-    quesnew=1;
-  );
+  out=Scoring(Ca);
+  Makequesdata(out_1,out_2);
+  Updatelog();
+  scorefin=1;
+  quesnew=1;
   scoreflg=0;
 );
 
 if(recordflg==1,
   if(scorefin==1,
-    Updatelog();
-    Subsedit(59,LogData);
+    Subsedit(Rec,LogData);
     quesnew=1;
-    recordflg=0;
   );
+  recordflg=0;
 );
 
-Displetters(Msgnew);
-Displetters(Msghint);
-Displetters(Msgques);
-Displetters(Msgsc);
-Displetters(Msgtest);
+Displetterlist([Msgnew,Msgques,Msghint,Msgsc]);
 
 Windispg();
 ;
@@ -1683,23 +1999,26 @@ var cdy = CindyJS({
   },
   angleUnit: "°",
   geometry: [
-    {name: "SW", type: "Free", pos: [4.0, 1.0153172866520974, -0.3894038049341961], color: [1.0,1.0,1.0], labeled: false, size: 2.0, border:false },
-    {name: "NE", type: "Free", pos: [-2.5765765765768043, -4.0, -0.8016105353826085], color: [1.0,1.0,1.0], labeled: false, size: 2.0, border:false },
-    {name: "Text11", type: "EditableText", pos: [4.0, -1.2921910427066938, -0.644614382946392], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
-    {name: "Text51", type: "EditableText", pos: [4.0, -2.2828421898065554, -0.44987765762237736], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
-    {name: "Text59", type: "EditableText", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0, dock: {to: "SW", offset: [-19.144402473515584, -17.6909205403212]}},
-    {name: "Text10", type: "EditableText", pos: [4.0, -0.946708218733155, -0.4773452888772243], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
-    {name: "Text12", type: "EditableText", pos: [4.0, -1.9998354371349472, -0.9871278730834727], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 80, textsize: 18.0},
-    {name: "Text13", type: "Button", pos: [0.7142857142857143, -4.0, -1.0592710646127035], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "quesflg=1;", text: "出題", textsize: 18.0},
-    {name: "Text15", type: "Button", pos: [2.285714285714285, -4.0, -3.631786507243554], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "scoreflg=1;\ntipsflag=0;", text: "採点", textsize: 18.0},
-    {name: "Text16", type: "Button", pos: [-2.427545372787797, -0.35963635152411805, 4.0], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "recordflg=1;", text: "記録", textsize: 18.0},
-    {name: "Text30", type: "Button", pos: [1.0619469026548671, -4.0, -1.5748454765923376], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.27272728085517883, script: "tipsflag=1;", text: "ヒント"}
+    {name: "SW", type: "Free", pos: [4.0, 4.0, -1.0], color: [1.0,1.0,1.0], labeled: false, size: 2.0, border:false },
+    {name: "NE", type: "Free", pos: [-3.2207852645006785, -4.0, -0.797318815432151], color: [1.0,1.0,1.0], labeled: false, size: 2.0, border:false },
+    {name: "Text11", type: "EditableText", pos: [4.0, -0.35706681487681285, -0.3619130221090437], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 70, textsize: 16.0},
+    {name: "Text59", type: "EditableText", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0, dock: {corner: "LL", offset: [89.0, 36.0]}},
+    {name: "Text10", type: "EditableText", pos: [4.0, -0.27825138375239405, -0.2990082198208417], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 70, textsize: 16.0},
+    {name: "Text12", type: "EditableText", pos: [4.0, -0.4665373086997104, -0.45981314890583663], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 70, textsize: 16.0},
+    {name: "A", type: "Free", pos: [4.0, 1.2160339362508144, -0.2849449055396865], color: [1.0, 0.0, 0.0], labeled: false, size: 3.0, border: true },
+    {name: "Text51", type: "EditableText", pos: [4.0, -1.0965882701713956, -0.2852683407153169], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
+    {name: "Text13", type: "Button", pos: [4.0, -3.0342719389291455, -0.7780010507263144], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "quesflg=quesflg+1;", text: "出題", textsize: 18.0},
+    {name: "Text14", type: "Button", pos: [4.0, -2.1636658645145603, -0.7947186680233742], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "scoreflg=1;\ntipsflag=0;", text: "採点", textsize: 18.0},
+    {name: "Text15", type: "Button", pos: [4.0, -1.1720406932389933, -0.7201173842075137], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "tipsflag=1;", text: "ヒント", textsize: 18.0},
+    {name: "Text16", type: "Button", pos: [4.0, -0.30508418289150907, -0.7156136153307012], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "graphflg=1;", text: "グラフ", textsize: 18.0},
+    {name: "Text17", type: "Button", pos: [4.0, 0.9403362135990619, -0.28022952644757926], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "recordflg=1;", text: "記録", textsize: 18.0},
+    {name: "Text18", type: "Button", pos: [4.0, -1.6646539205735005, -0.42682479532764933], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 1.0, script: "confirmflg=1;", text: "確認", textsize: 18.0}
   ],
   ports: [{
     id: "CSCanvas",
-    width: 788,
-    height: 523,
-    transform: [{visibleRect: [-11.799416122645184, 6.704455954059458, 4.999029956206496, -4.444766506904283]}],
+    width: 873,
+    height: 436,
+    transform: [{visibleRect: [-17.005398715666082, 6.715515197337455, 7.451005685760464, -5.498679898907647]}],
     axes: true,
     grid: 1.0,
     background: "rgb(247,247,247)"

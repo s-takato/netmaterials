@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    
+    <title>RegionInequations5.cdy</title>
+    <style type="text/css">
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        #CSConsole {
+            background-color: #FAFAFA;
+            border-top: 1px solid #333333;
+            bottom: 0px;
+            height: 200px;
+            overflow-y: scroll;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cindyjs.org/dist/v0.8/CindyJS.css">
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/Cindy.js"></script>
+    <script type="text/javascript" src="https://cindyjs.org/dist/v0.8/KetCindyPlugin.js"></script>
+<script id="csinit" type="text/x-cindyscript">
+use("KetCindyPlugin");
+Dircdy=loaddirectory;
+setdirectory(gethome());
+import("ketcindy.ini");
+
+Setdirectory(Dircdy);
+import("libfornet.txt");
+
+Startquestion1(question):=(
+  regional(no,ex,ca);
+  StartTime=Counttime();
+  QuesNo=QuesNo+1; //210424
+  no=text(QuesNo);
+  ex=question;
+  if(!isstring(ex),ex=text(ex));
+  QuesDataHead=no+";;"+ex;
+);
+
+////Setting elements
+Seteditable(51,["ID=","Size=20","Width=150"]);// no ketjs on
+Seteditable(59,["","Size=16","Width=700"]);// no ketjs off
+
+newflg=1;
+quesflg=0;
+quesnew=0;
+scoreflg=0;
+Scorectr=1;
+recordflg=0;
+recordfin=0;
+
+monctr=0;
+regflg=0;
+ansflg=0;
+drawflg=0;
+;
+</script>
+<script id="csdraw" type="text/x-cindyscript">
+Ketinit();
+Setketcindyjs(["NoLabel=[]","Color=offwhite"]);//no ketjs
+Seteditable(41,["","Size=18","Width=700"]);// no ketjs
+Setwindow([-5,5],[-5,5]);
+skyblue="Color=[0.37,0.07,0,0.12]";
+
+/////////////// 学習スタート /////////////
+if(newflg==1,
+ st=Textedit(51,"noname");
+ Startlearning(st);
+ Putpoint("A",[6,3]);
+ Putpoint("B",[6,2]);
+ Putpoint("C",[6,1]);
+ quesnew=1;
+ newflg=0;
+ regflg=0;
+ subquesflg=0;
+ ansflg=0;
+ drawflg=0;
+);
+
+/////////////// 問題生成 /////////////
+if(quesnew==1,
+ regional(kk,xx,yy);
+ cL=[];
+ forall(1..6,
+  tmp=randominteger(7);
+  tmp=tmp-3;
+  cL=append(cL,tmp);
+ );
+ if((cL_1==0)&(cL_2==0),cL_1=1;);
+ if((cL_4==0)&(cL_5==0),cL_5=1;);
+ if(cL_1!=0,
+  kk=cL_4/cL_1;
+  if((cL_5==cL_2*kk)&(cL_6==cL_3*kk),
+   cL_6=cL_6+1;
+  );
+ ,
+  if(cL_2!=0,
+   kk=cL_5/cL_2;
+   if(cL_6==cL_3*kk,
+    cL_6=cL_6+1;
+   );
+  );
+ );
+ det=cL_1*cL_5-cL_2*cL_4;
+ if(det!=0,
+  xx=(-cL_3*cL_5+cL_2*cL_6)/det;
+  yy=(-cL_1*cL_6+cL_3*cL_4)/det;
+  if(xx<-4,
+   dx=-ceil(xx);
+   cL_3=cL_3-cL_1*dx;
+   cL_6=cL_6-cL_4*dx;
+  );
+  if(xx>4,
+   dx=-floor(xx);
+   cL_3=cL_3-cL_1*dx;
+   cL_6=cL_6-cL_4*dx;
+  );
+  if(yy<-4,
+   dy=-ceil(yy);
+   cL_3=cL_3-cL_2*dy;
+   cL_6=cL_6-cL_5*dy;
+  );
+  if(yy>4,
+   dy=-floor(yy);
+   cL_3=cL_3-cL_2*dy;
+   cL_6=cL_6-cL_5*dy;
+  );
+ );
+ if(det==0,
+  if(cL_1==0,
+   if(cL_2*cL_6-cL_3*cL_5==0,
+    cL_6=cL_6+1;
+   ,
+    if((cL_2<0)&(cL_5>0),
+	 if(cL_3/cL_2<cL_6/cL_5,
+	  cL_2=-cL_2;
+	 );
+	);
+    if((cL_2>0)&(cL_5<0),
+	 if(cL_3/cL_2>cL_6/cL_5,
+	  cL_5=-cL_5;
+	 );
+	);
+   );
+  );
+ );
+ monctr=monctr+1;
+ quesflg=0;
+ quesnew=0;
+);
+
+/////////////// 問題作成 /////////////
+if(quesflg==1,
+ val1=cL_1; val2=cL_2; val3=cL_3;
+ val4=cL_4; val5=cL_5; val6=cL_6;
+ eq1=Assign("v1*x+v2*y+v3",["v1",val1,"v2",val2,"v3",val3]);
+ eq1=Addasterisk(eq1); //*を追加 安全のため
+ tmp=replace(eq1,"(","");
+ tmp=replace(tmp,")","");
+ tmp=replace(tmp,"+-","-");
+ tmp=replace(tmp,"1*x","x");
+ tmp=replace(tmp,"-1*x","-x");
+ tmp=replace(tmp,"0*x","");
+ tmp=replace(tmp,"+1*y","+y");
+ tmp=replace(tmp,"-1*y","-y");
+ tmp=replace(tmp,"+0*y","");
+ tmp=replace(tmp,"+0","");
+ tmp=replace(tmp,"-0","");
+ println(substring(tmp,0,1));
+ if(substring(tmp,0,1)=="+",
+  tmp=substring(tmp,1,length(tmp));
+ );
+ eq1=replace(tmp,"+0","");
+ teq1=Totexform(eq1); //TeX形式へ
+ ceq1=Tocindyform(eq1); //Cindy形式へ
+ teq1=teq1+">0";
+ ceq1=ceq1+"=0";
+ Letter([7,YMAX+1],"e","次の連立不等式について，次の問いに答えよ．",["Size=2"]);
+ Expr([8,YMAX],"e",teq1,["Size=2"]);
+ Letter([14,YMAX],"e","$\cdots$①",["Size=2"]);
+
+ eq2=Assign("v4*x+v5*y+v6",["v4",val4,"v5",val5,"v6",val6]);
+ eq2=Addasterisk(eq2); //*を追加 安全のため
+ tmp=replace(eq2,"(","");
+ tmp=replace(tmp,")","");
+ tmp=replace(tmp,"+-","-");
+ tmp=replace(tmp,"1*x","x");
+ tmp=replace(tmp,"-1*x","-x");
+ tmp=replace(tmp,"0*x","");
+ tmp=replace(tmp,"+1*y","+y");
+ tmp=replace(tmp,"-1*y","-y");
+ tmp=replace(tmp,"+0*y","");
+ println(substring(tmp,0,1));
+ if(substring(tmp,0,1)=="+",
+  tmp=substring(tmp,1,length(tmp));
+ );
+ eq2=replace(tmp,"+0","");
+ teq2=Totexform(eq2); //TeX形式へ
+ ceq2=Tocindyform(eq2); //Cindy形式へ
+ teq2=teq2+">0";
+ ceq2=ceq2+"=0";
+ Expr([8,YMAX-1],"e",teq2,["Size=2"]);
+ Letter([14,YMAX-1],"e","$\cdots$②",["Size=2"]);
+ Letter([7,3],"e","(1) 不等式①の表す領域を点Aで指定せよ．",["Size=2"]);
+ Letter([7,0.5],"e","(2) 不等式②の表す領域を点Bで指定せよ．",["Size=2"]);
+ Letter([7,-2],"e","(3) 連立不等式の表す領域を点Cで指定せよ．",["Size=2"]);
+ Ex=teq1+";;"+teq2;
+ Startquestion1(Ex);
+);
+
+if(drawflg==1,
+ Implicitplot("1",ceq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+);
+if(drawflg==2,
+ Implicitplot("2",ceq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+);
+if(drawflg==3,
+ Implicitplot("1",ceq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+ Implicitplot("2",ceq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+);
+
+
+/////////////// 法線ベクトル生成 /////////////
+if(quesflg==1,
+ if(val2>0,
+  nv1=[val1,val2]/norm([val1,val2]);
+ );
+ if(val2==0,
+  if(val1>0,
+   nv1=[val1,val2]/norm([val1,val2]);
+  ,
+   nv1=-[val1,val2]/norm([val1,val2]);
+  );
+ );
+ if(val2<0,
+  nv1=-[val1,val2]/norm([val1,val2]); 
+ );
+
+ if(val5>0,
+  nv2=[val4,val5]/norm([val4,val5]);
+ );
+ if(val5==0,
+  if(val4>0,
+   nv2=[val4,val5]/norm([val4,val5]);
+  ,
+   nv2=-[val4,val5]/norm([val4,val5]);
+  );
+ );
+ if(val5<0,
+  nv2=-[val4,val5]/norm([val4,val5]);
+ );
+);
+
+/////////////// 解答 /////////////
+if(ansflg==1,
+ subsquesflg=1;
+ Letter([10.5,1.8],"e","内部点A$("+format(A.x,2)+",\ "+format(A.y,2)+")$",["Size=1.5","Color=red"]);
+);
+
+if(ansflg==2,
+ subsquesflg=2;
+ Letter([10.5,1.8],"e","内部点A$("+format(A.x,2)+",\ "+format(A.y,2)+")$",["Size=1.5","Color=red"]);
+ Letter([10.5,-0.7],"e","内部点B$("+text(format(B.x,2))+",\ "+text(format(B.y,2))+")$",["Size=1.5","Color=red"]);
+);
+
+if(ansflg==3,
+ subsquesflg=3;
+ Letter([10.5,1.8],"e","内部点A$("+format(A.x,2)+",\ "+format(A.y,2)+")$",["Size=1.5","Color=red"]);
+ Letter([10.5,-0.7],"e","内部点B$("+format(B.x,2)+",\ "+format(B.y,2)+")$",["Size=1.5","Color=red"]);
+ Letter([10.5,-3.4],"e","内部点C$("+format(C.x,2)+",\ "+format(C.y,2)+")$",["Size=1.5","Color=red"]);
+);
+
+
+/////////////// 正解の表示 /////////////
+if(scoreflg==1,
+ lceq1=substring(ceq1,0,length(ceq1)-2);
+ Deffun("f1(x,y)",["regional(z)","z="+lceq1,"z"]);
+ if((A.x>-5.1)&(A.x<5.1)&(A.y>-5.1)&(A.y<5.1),
+  if(f1(A.x,A.y)>0,
+   Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+  ,
+   Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+  );
+ );
+);
+
+if(scoreflg==2,
+ lceq1=substring(ceq1,0,length(ceq1)-2);
+ lceq2=substring(ceq2,0,length(ceq2)-2);
+ Deffun("f1(x,y)",["regional(z)","z="+lceq1,"z"]);
+ Deffun("f2(x,y)",["regional(z)","z="+lceq2,"z"]);
+ if((A.x>-5.1)&(A.x<5.1)&(A.y>-5.1)&(A.y<5.1)&(B.x>-5.1)&(B.x<5.1)&(B.y>-5.1)&(B.y<5.1),
+  if(f1(A.x,A.y)>0,
+   Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+  ,
+   Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+  );
+  if(f2(B.x,B.y)>0,
+   Letter([20,-0.7],"e","正解",["Size=1.5","Color=red"]);
+  ,
+   Letter([20,-0.7],"e","間違い",["Size=1.5","Color=red"]);
+  );
+ );
+);
+
+if(scoreflg==3,
+ lceq1=substring(ceq1,0,length(ceq1)-2);
+ lceq2=substring(ceq2,0,length(ceq2)-2);
+ Deffun("f1(x,y)",["regional(z)","z="+lceq1,"z"]);
+ Deffun("f2(x,y)",["regional(z)","z="+lceq2,"z"]);
+ if((A.x>-5.1)&(A.x<5.1)&(A.y>-5.1)&(A.y<5.1)&(B.x>-5.1)&(B.x<5.1)&(B.y>-5.1)&(B.y<5.1)&(C.x>-5.1)&(C.x<5.1)&(C.y>-5.1)&(C.y<5.1),
+  if(f1(A.x,A.y)>0,
+   Letter([20,1.8],"e","正解",["Size=1.5","Color=red"]);
+   sc1=1;
+  ,
+   Letter([20,1.8],"e","間違い",["Size=1.5","Color=red"]);
+   sc1=0;
+  );
+  if(f2(B.x,B.y)>0,
+   Letter([20,-0.7],"e","正解",["Size=1.5","Color=red"]);
+   sc2=1;
+  ,
+   Letter([20,-0.7],"e","間違い",["Size=1.5","Color=red"]);
+   sc2=0;
+  );
+  if((f1(C.x,C.y)>0)&(f2(C.x,C.y)>0),
+   Letter([20,-3.4],"e","正解",["Size=1.5","Color=red"]);
+   sc3=1;
+  ,
+   Letter([20,-3.4],"e","間違い",["Size=1.5","Color=red"]);
+   sc3=0;
+  );
+ );
+ Stans="A$("+text(A.x)+",\ "+text(A.y)+")$;;B$("+text(B.x)+",\ "+text(B.y)+")$;;C$("+text(C.x)+",\ "+text(C.y)+")$";
+ Score=sc1*sc2*sc3;
+ Makequesdata(Stans,Score,Scorectr);
+ Scorectr=Scorectr+1;
+);
+
+
+/////////////// 正解の領域 /////////////
+if(regflg==1,
+ Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+ Implicitplot("1",ceq1,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+ S01=Ptstart(imp1); E01=Ptend(imp1);
+ if(S01_1<E01_1,
+  S1=E01; E1=S01;
+ ,
+  S1=S01; E1=E01;
+ );
+println(S1);
+println(E1);
+ Partcrv("11",S1,E1,"fr0",["nodisp"]);
+ Partcrv("12",E1,S1,"fr0",["nodisp"]);
+ Joincrvs("11",["Invert(imp1)","part11"],["nodisp"]);
+ Joincrvs("12",["imp1","part12"],["nodisp"]);
+ tmp=(S1+E1)/2;
+ pt11=tmp+nv1;
+ pt12=tmp-nv1;
+ if((f1(pt11_1,pt11_2)>0),
+  Shade(["join11"],[skyblue]);
+ );
+ if((f1(pt12_1,pt12_2)>0),
+  Shade(["join12"],[skyblue]);
+ );
+);
+
+if(regflg==2,
+ Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+ Implicitplot("2",ceq2,"x=[-5,5]","y=[-5,5]",["Num=1","dr,1.5"]);
+ S02=Ptstart(imp2); E02=Ptend(imp2);
+ if(S02_1<E02_1,
+  S2=E02; E2=S02;
+ ,
+  S2=S02; E2=E02;
+ );
+ Partcrv("21",S2,E2,"fr0",["nodisp"]);
+ Partcrv("22",E2,S2,"fr0",["nodisp"]);
+ Joincrvs("21",["Invert(imp2)","part21"],["nodisp"]);
+ Joincrvs("22",["imp2","part22"],["nodisp"]);
+ tmp=(S2+E2)/2;
+ pt21=tmp+nv2;
+ pt22=tmp-nv2;
+ if((f2(pt21_1,pt21_2)>0),
+  Shade(["join21"],[skyblue]);
+ );
+ if((f2(pt22_1,pt22_2)>0),
+  Shade(["join22"],[skyblue]);
+ );
+);
+
+
+if(regflg==3,
+ Framedata("0",[[-5,-5],[5,5]],["corner","nodisp"]);
+ Cprd=nv1_1*nv2_2-nv1_2*nv2_1; //法線ベクトルが平行
+ Cprd0=val2*val6-val3*val5; //2直線の一致を判定
+ S1=Ptstart(imp1); E1=Ptend(imp1);
+ S2=Ptstart(imp2); E2=Ptend(imp2);
+
+ lceq1=substring(ceq1,0,length(ceq1)-2);
+ lceq2=substring(ceq2,0,length(ceq2)-2);
+ Deffun("f1(x,y)",["regional(z)","z="+lceq1,"z"]);
+ Deffun("f2(x,y)",["regional(z)","z="+lceq2,"z"]);
+
+ if((S1==S2)&(E1==E2), //2直線が一致する場合
+  regional(tmp,pt1,pt2);
+  tmp=(S1+E1)/2;
+  Partcrv("1",S1,E1,"fr0",["nodisp"]);
+  Partcrv("2",E1,S1,"fr0",["nodisp"]);
+  Joincrvs("1",["Invert(imp1)","part1"],["nodisp"]);
+  Joincrvs("2",["imp1","part2"],["nodisp"]);
+  pt1=tmp+0.5*nv1;
+  pt2=tmp-0.5*nv1;
+  if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+   Shade(["join1"],[skyblue]);
+  );
+  if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+   Shade(["join2"],[skyblue]);
+  );
+ );
+ if((S1_1<S2_1)%((S1_1==S2_1)&(S1_2<S2_2)),
+  gr1=imp1; nv3=nv1;
+  gr2=imp2; nv4=nv2;
+ );
+ if((S1_1>S2_1)%((S1_1==S2_1)&(S1_2>S2_2)),
+  gr1=imp2; nv3=nv2;
+  gr2=imp1; nv4=nv1;
+ );
+ Sg1=Ptstart(gr1); Eg1=Ptend(gr1);
+ Sg2=Ptstart(gr2); Eg2=Ptend(gr2);
+
+ if((Cprd==0)&((S1!=S2)%(E1!=E2)), //2直線が平行の場合
+  regional(tmp1,tmp2,vv,nv,pt1,pt2,pt3);
+  tmp1=(Sg1+Eg1)/2;
+  tmp2=(Sg2+Eg2)/2;
+  vv=tmp1-tmp2;
+  nv=vv/norm(vv);
+  pt1=tmp1+0.5*nv;
+  pt2=(tmp1+tmp2)/2;
+  pt3=tmp2-0.5*nv;
+  Partcrv("1",Eg1,Sg1,"fr0",["nodisp"]);
+  Partcrv("21",Sg1,Sg2,"fr0",["nodisp"]);
+  Partcrv("22",Eg2,Eg1,"fr0",["nodisp"]);
+  Partcrv("3",Sg2,Eg2,"fr0",["nodisp"]);
+  Joincrvs("1",["gr1","part1"],["nodisp"]);
+  Joincrvs("2",["Invert(gr1)","part21","gr2","part22"],["nodisp"]);
+  Joincrvs("3",["gr2","part3"],["nodisp"]);
+  if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+   Shade(["join1"],[skyblue]);
+  );
+  if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+   Shade(["join2"],[skyblue]);
+  );
+  if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)>0),
+   Shade(["join3"],[skyblue]);
+  );
+  Listplot("gr1",gr1,["dr,1.5"]);
+  Listplot("gr2",gr2,["dr,1.5"]);
+ );
+ 
+ if(Cprd!=0, //2直線が平行でない場合
+  regional(tmp,dv1,dv2,ndv1,ndv2,pt1,pt2,pt3,pt4);
+  tmp=Intersectcrvs("imp1","imp2");
+  tmp=tmp_1;
+  dv1=Sg1-tmp; ndv1=dv1/norm(dv1);
+  dv2=Sg2-tmp; ndv2=dv2/norm(dv2);
+  pt1=tmp+0.5*(ndv1+ndv2);
+  pt2=tmp+0.5*(-ndv1+ndv2);
+  pt3=tmp+0.5*(-ndv1-ndv2);
+  pt4=tmp+0.5*(ndv1-ndv2);
+
+  Partcrv("1",Sg1,Sg2,"fr0",["nodisp"]);
+  Partcrv("2",Sg2,Eg1,"fr0",["nodisp"]);
+  Partcrv("3",Eg1,Eg2,"fr0",["nodisp"]);
+  Partcrv("4",Eg2,Sg1,"fr0",["nodisp"]);
+
+  Listplot("1",[Sg2,tmp,Sg1],["nodisp"]);
+  Listplot("2",[Eg1,tmp,Sg2],["nodisp"]);
+  Listplot("3",[Eg2,tmp,Eg1],["nodisp"]);
+  Listplot("4",[Sg1,tmp,Eg2],["nodisp"]);
+
+  Joincrvs("1",["sg1","part1"],["nodisp"]);
+  Joincrvs("2",["sg2","part2"],["nodisp"]);
+  Joincrvs("3",["sg3","part3"],["nodisp"]);
+  Joincrvs("4",["sg4","part4"],["nodisp"]);
+
+  if((f1(pt1_1,pt1_2)>0)&(f2(pt1_1,pt1_2)>0),
+   Shade(["join1"],[skyblue]);
+  );
+  if((f1(pt2_1,pt2_2)>0)&(f2(pt2_1,pt2_2)>0),
+   Shade(["join2"],[skyblue]);
+  );
+  if((f1(pt3_1,pt3_2)>0)&(f2(pt3_1,pt3_2)>0),
+   Shade(["join3"],[skyblue]);
+  );
+  if((f1(pt4_1,pt4_2)>0)&(f2(pt4_1,pt4_2)>0),
+   Shade(["join4"],[skyblue]);
+  );
+  Listplot("gr1",gr1,["dr,1.5"]);
+  Listplot("gr2",gr2,["dr,1.5"]);
+ );
+);
+
+///////////////// 解答の記録 ////////////////
+if(recordflg==1,
+ Updatelog();
+ Subsedit(59,LogData);
+ quesnew=1;
+ quseflg=0;
+ subquesflg=0;
+ drawflg=0;
+ ansflg=0;
+ scoreflg=0;
+ regflg=0;
+ Putpoint("A",[6,3]);
+ Putpoint("B",[6,2]);
+ Putpoint("C",[6,1]);
+ recordflg=0;
+);
+
+Windispg();
+
+//Help("Setketcindyjs");
+</script>
+    <script type="text/javascript">
+var cdy = CindyJS({
+  scripts: "cs*",
+  defaultAppearance: {
+    dimDependent: 0.7,
+    fontFamily: "sans-serif",
+    lineSize: 1,
+    pointSize: 5.0,
+    textsize: 12.0
+  },
+  angleUnit: "°",
+  geometry: [
+    {name: "SW", type: "Free", pos: [4.0, 4.0, -0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "NE", type: "Free", pos: [4.0, 4.0, 0.8], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "Text0", type: "Evaluate", pos: [2.310905490538277, -4.0, 0.5199280093503652], color: [1.0, 1.0, 1.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 0.27272728085517883, alpha: 0.0, visible: false, text: "①", textsize: 14.0},
+    {name: "Text59", type: "EditableText", pos: [-1.0952380952380953, -4.0, 0.593827455434831], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 700, textsize: 16.0},
+    {name: "Text51", type: "EditableText", pos: [3.0627615062761504, -4.0, -0.6261276935965581], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 150, text: "ID=", textsize: 20.0},
+    {name: "Text1", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.286, 0.286], fillalpha: 0.27272728085517883, script: "Viewtex();\nkc();", text: "Figure", textsize: 18.0, dock: {corner: "UL", offset: [10.0, -20.0]}},
+    {name: "Text2", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 0.0], fillalpha: 0.27272728085517883, script: "if(length(Shellparent)>0,\n  Makeshell(),Makebat();\n);\nif(indexof(Libname,\"sci\")>0,\n  writetosci(2),writetoRS(2)\n);\nkc();", text: "Parent", textsize: 18.0, dock: {corner: "UL", offset: [77.0, -20.0]}},
+    {name: "Text3", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [1.0, 0.929, 0.6], fillalpha: 0.48717948717948717, script: "Parafolder();", text: "ParaF", textsize: 18.0, dock: {corner: "UL", offset: [297.0, -20.0]}},
+    {name: "Text4", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.51, 0.949, 1.0], fillalpha: 0.27272728085517883, script: "Mkanimation();", text: "Anime", textsize: 18.0, dock: {corner: "UL", offset: [353.0, -20.0]}},
+    {name: "Text5", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 0.0, 1.0], fillalpha: 0.27272728085517883, script: "Mkflipanime();", text: "Flip", textsize: 18.0, dock: {corner: "UL", offset: [422.0, -20.0]}},
+    {name: "Text21", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.5726495726495726, script: "Mkketcindyjs(append(KETJSOP,\"Web=y\"));", text: "Ketjson", textsize: 18.0, dock: {corner: "UL", offset: [144.0, -20.0]}},
+    {name: "Text22", type: "Button", color: [0.0, 0.0, 0.0], fillcolor: [0.0, 1.0, 1.0], fillalpha: 0.4358974358974359, script: "Mkketcindyjs(append(KETJSOP,\"Web=n\"));", text: "Ketjsoff", textsize: 18.0, dock: {corner: "UL", offset: [218.0, -20.0]}},
+    {name: "Text7", type: "Button", pos: [-3.811965811965812, -4.0, -0.6395064904682796], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\ndrawflg=1;", text: "出題", textsize: 16.0},
+    {name: "Text541", type: "Button", pos: [4.0, 0.4011773927821725, 0.23277897902499645], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\ndrawfig=1;\nansflg=1;\nscoreflg=1;\nregflg=1;\n", text: "(1)の採点", textsize: 16.0},
+    {name: "Text56", type: "Button", pos: [-2.3107569721115535, -4.0, 0.5961933018708262], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "recordflg=1;", text: "記録", textsize: 16.0},
+    {name: "Text542", type: "Button", pos: [4.0, -0.1519049920198368, 0.23237715168497675], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nsubquesflg=2;\ndrawflg=2;\nansflg=2;\nscoreflg=2;\nregflg=2;\n", text: "(2)の採点", textsize: 16.0},
+    {name: "Text55", type: "Button", pos: [4.0, -0.8216777033732187, 0.23237715168497675], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nsubsquesflg=3;\ndrawflg=3;\nansflg=3;\nscoreflg=3;\nregflg=3;\n", text: "(3)の採点", textsize: 16.0},
+    {name: "Text531", type: "Button", pos: [4.0, 0.8338762214983714, 0.4823385909641327], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nsubsquesflg=1;\ndrawflg=1;\nansflg=1;\nscoreflg=0;\nregflg=0;", text: "(1)の解答", textsize: 16.0},
+    {name: "Text532", type: "Button", pos: [4.0, -0.33876221498371334, 0.4823385909641327], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nsubsquseflg=2;\ndrawflg=2;\nansflg=2;\nscoreflg=1;\nregflg=0;\n", text: "(2)の解答", textsize: 16.0},
+    {name: "Text533", type: "Button", pos: [4.0, -1.6883116883116882, 0.4807725565778855], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\nsubquesflg=3;\ndrawflg=3;\nansflg=3;\nscoreflg=2;\nregflg=0;\n", text: "(3)の解答", textsize: 16.0},
+    {name: "Text6", type: "Text", pos: [4.0, -1.5, 0.5], color: [0.0, 0.0, 0.0]},
+    {name: "B", type: "Free", pos: [4.0, 1.3333333333333333, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "C", type: "Free", pos: [4.0, 0.6666666666666666, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "A", type: "Free", pos: [4.0, 2.0, 0.6666666666666666], color: [1.0, 0.0, 0.0], labeled: true},
+    {name: "Text522", type: "Button", pos: [4.0, 0.09100127363293203, 0.1914064053072094], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "qusflg=1;\ndrawflg=2;\nansflg=1;\nscoreflg=1;\nregflg=0;", text: "(2)表示", textsize: 16.0},
+    {name: "Text523", type: "Button", pos: [4.0, -0.36848390728749575, 0.18509023945409123], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, script: "quesflg=1;\ndrawflg=3;\nansflg=2;\nscoreflg=2;\nregflg=0;", text: "(3)表示", textsize: 16.0},
+    {name: "Text8", type: "Text", pos: [4.0, -0.6471818232530836, 0.16884001927726636], color: [0.0, 0.0, 0.0]}
+  ],
+  ports: [{
+    id: "CSCanvas",
+    width: 1096,
+    height: 582,
+    transform: [{visibleRect: [-8.296141531834222, 9.315373687856685, 24.270490325419843, -7.978220966269105]}],
+    grid: 1.0,
+    snap: true,
+    background: "rgb(168,176,192)"
+  }],
+  csconsole: false,
+  use: ["katex"],
+  cinderella: {build: 1999, version: [3, 0, 1999]}
+});
+    </script>
+</head>
+<body>
+    <div id="CSCanvas"></div>
+</body>
+</html>
