@@ -1,4 +1,20 @@
-// LIbrary for net materials   20200505
+//  Copyright (C)  2021  Setsuo Takato, KETCindy Japan project team
+//
+//This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>
+//
+
+// Library for learning   20210525
 
 // グローバル変数
 // LogData　学習のログデータ
@@ -6,15 +22,17 @@
 // QuesData　QuesdataHead+学生の解答+スコア+時間+採点回数（Makequesdataで作成）
 // QuestNo　問題番号（Startquestionで1ずつ増やされる）
 // Msgnew, Msgques, Msgsc　頻用メッセージの初期化（開始，出題，採点）
+// Posnew Newsessionのメッセージ位置
 // StartTime は内部的なグローバル変数
 
 // フロー制御のためのグローバル変数
-// newflg　セッション開始時は１，開始処理の終了以降は０
-// quesflg, scoreflg, recordflg　各ボタンが押されたら1（初期値は０，処理が終わったら０に戻す）
-// quesgiven　問題が作成されたら１
-// quesnew　問題が作成してもよい場合は１，そうでない場合は０
+// newflg　セッション開始時は 1，開始処理の終了以降は 0
+// confirmflg newsessionの際，確認ボタンが押されたら1
+// quesflg, scoreflg, recordflg　各ボタンが押されたら1（初期値は 0，処理が終わったら 0 に戻す）
+// quesgiven　問題が作成されたら 1
+// quesnew　問題が作成してもよい場合は 1，そうでない場合は 0
 // scorectr　採点回数のカウンタ
-// scorefin　採点が１度でも済んだら１
+// scorefin　採点が１度でも済んだら 1
 
 // Newsession(editno,noinput,pos (,size,studentL));　最初に実行
 // Confirmstudent(st,Students)　stがStudentsに登録されているかをチェック
@@ -22,8 +40,8 @@
 // Startquestion(question,correctanswer)　QuesDataHead=各問題の番号+問題+正解, QuesNo=+1
 // Makequesdata(stans,stscore,ctr)　QuesData=QuesdataHead+解答+スコア+解答時間+回数
 // Updatelog()　QuesNoが同じ場合はLogDataを更新，そうでなければ追加
-// Drwquesno(pos (,size, rgb))　番号表示のデータを作成
-// Displetters(msg), Dispexprs(msg)　msgが空でなければ表示
+// Dispquesno(pos (,size, rgb))　番号表示のデータを作成
+// Displetterlist(msglist), Dispexprlist([msg1,...])　各msgが空でなければ表示
 //　　msgは関数の内部で作成（表示はしない），フローで表示するために用いる
 //　　形式：リスト [message, position (. size(12), color([0,0,0])] の単体かこれらのリスト
 // Log2csv(dt)　logdataをcsv形式のリストにして返す
@@ -42,72 +60,48 @@ QuesData="";
 QuesNo=0;
 StartTime=0;
 
-newflg=1;
-quesflg=0;
-scoreflg=0;
-recordflg=0;
-quesgiven=0;
-quesnew=1;
+newflg=1;//開始処理が終われば0
+confirmflg=0;//確認
+quesflg=0;//出題
+scoreflg=0;//採点
+scorefin=0;//採点が１度でもすれば 1
+Scorectr=0;//採点回数のカウンタ
+recordflg=0;//記録
+quesgiven=0;//出題されているか
+quesnew=0;//出題していいか
 Msgnew=[];
 Msgques=[];
 Msgsc=[];
 
-Newsession(editno,pos):=Newsession(editno,"",pos,18,[]);
-Newsession(editno,Arg1,Arg2):=(
-  if(islist(Arg1),
-    Newsession(editno,"",Arg1,Arg2,[]);
-  ,
-    Newsession(editno,Arg1,Arg2,18,[]);
-  );  
-);
-Newsession(editno,Arg1,Arg2,studentL):=(
-  if(islist(Arg1),
-    Newsession(editno,"",Arg1,Arg2,studentL);
-  ,
-    Newsession(editno,Arg1,Arg2,18,studentL);
-  );  
-);
-Newsession(editno,noinput,pos,size,studentL):=(
-  regional(st,tmp,conf,msg);
-  // global Msgnew
-  st=Textedit(editno,noinput);
-  if(length(st)>0,
-    conf="ok";
-    if(length(studentL)>0,
-      conf=Confirmstudent(st,StudentL);
-      if(length(conf)>0,
-        st=conf;
-        Subsedit(editno,"ID="+st);
-        conf="ok";
-      ,
-        msg=["ID未確認",pos,size,[1,0,0]];
-        oonf="no";
-      );
-    );
-    if(conf=="ok",
-      msg=["出題を選択",pos,size,[0,0,1]];
-      Startlearning(st);
-      quesnew=1;
-      quesgiven=0;
-      scorefin=0;
-      newflg=0;
-    );
-  ,
-    msg=["IDを入力",pos,size,[0,0,1]];
-  );
-  msg;
+Coorodinates(mx,my,mo,sz):=(
+//help:Coorodinates([0.4,-0.1],[0,0.3],[-0.1,-0.4],16);
+  regional(tmp,tmp1,tmp2);
+  draw([XMIN,0],[XMAX,0],color->[0,0,0]);
+  draw([0,YMIN],[0,XMAX],color->[0,0,0]);
+  drawtext([XMAX,0]+mx,"$x$",size->sz,align->"right");
+  drawtext([0,YMAX]+my,"$y$",size->sz,align->"mid");
+  drawtext([0,0]+mo,"O",size->sz,align->"right");
+  tmp1=ceil(XMIN); tmp2=floor(XMAX);
+  tmp=apply(remove(tmp1..tmp2,[0]),[#,text(#)]);
+  tmp=flatten(tmp);
+  Htickmark(tmp);
+  tmp1=ceil(YMIN); tmp2=floor(YMAX);
+  tmp=apply(remove(tmp1..tmp2,[0]),[#,text(#)]);
+  tmp=flatten(tmp);
+  Vtickmark(tmp);
 );
 
-Confirmstudent(st,Students):=(
-  regional(numL,nsL,nn,kk,nstr,conf,tmp,tmp1);
+Confirmstudent(st,students):=(
+  regional(numL,nsL,nn,kk,nstr,out,tmp,tmp1);
   numL=apply(0..9,text(#));
+  out="";
   nsL=[];
-  forall(1..(length(Students)),nn,
-    tmp1=Students_nn;
+  forall(1..(length(students)),nn,
+    tmp1=students_nn;
     nstr="";
     kk=1;
     while(kk<=length(tmp1),
-      tmp=st_(kk);
+      tmp=tmp1_(kk);
       if(contains(numL,tmp),
         nstr=nstr+tmp;
         kk=kk+1;
@@ -132,24 +126,87 @@ Confirmstudent(st,Students):=(
   if(contains(nsL,nn),
     tmp=select(1..(length(nsL)),nsL_#==nn);
     tmp=tmp_1;
-    conf=Studentls_tmp;
+    out=students_tmp;
   ,
-    conf="";
+    out="";
   );
-  conf;
+  out;
 );
 
-Startlearning(stname):=(
+Startlearning(editno):=(
+  regional(stname);
   //global LogData
+  stname=Textedit(editno,"noname");
   LogData=stname+";;"+Getcurtime();
   LogData;
 );
 
+Newsession(editno,pos):=Newsession(editno,"",pos,18,[]);
+Newsession(editno,Arg1,Arg2):=(
+  if(islist(Arg1),
+    Newsession(editno,"",Arg1,Arg2,[]);
+  ,
+    Newsession(editno,Arg1,Arg2,18,[]);
+  );  
+);
+Newsession(editno,Arg1,Arg2,Arg3):=(
+  if(islist(Arg3),
+    Newsession(editno,"",Arg1,Arg2,18,Arg3);
+  ,
+    Newsession(editno,Arg1,Arg2,Arg3,[]);
+  );  
+);
+Newsession(editno,noinput,pos,size,studentL):=(
+  regional(st,msg,confok);
+  Posnew=pos;
+  Sizenew=size;
+  confok=0;
+  st=Textedit(editno,noinput);
+  if(length(st)==0,
+    st="";
+    msg=["ID",pos,size,[1,0,0]];
+  ,
+    if(length(studentL)>0,
+      st=Confirmstudent(st,studentL);
+      if(length(st)>0,
+        Subsedit(editno,"ID="+st);
+        confok=1;
+      ,
+        msg=["ID?",pos,size,[1,0,0]];
+      );
+    ,
+      confok=1;
+    );
+  );
+  if(confok==1,
+    msg=["$\Longleftarrow$",pos,size,[1,0,0]];
+    if(confirmflg==1,
+      Startlearning(editno);
+      msg=["$\Longrightarrow$",pos,size,[1,0,0]];
+      quesnew=1;
+      quesgiven=0;
+      newflg=0;
+    );
+  );
+  Msgnew=msg;
+  st;
+);
+
+Dispquesno(pos):=Dispquesno(pos,18,[0,0,0]);
+Dispquesno(pos,size):=Dispquesno(pos,size,[0,0,0]);
+Dispquesno(pos,size,rgb):=(
+  regional(msg);
+  msg=[Assign("N",["N",QuesNo]),pos,size,rgb];
+  msg;
+);
+
 Startquestion(question,correct):=(
-  regional(no,ex,ca);
+  regional(no,ex,ca,msg);
   StartTime=Counttime();
   QuesNo=QuesNo+1; //210424
+  Msgnew=Dispquesno(Posnew,Sizenew,[0,0,0]);
   no=text(QuesNo);
+  Scorectr=1;
   ex=question;
   if(!isstring(ex),ex=text(ex));
   ca=correct;
@@ -158,8 +215,7 @@ Startquestion(question,correct):=(
   QuesDataHead;
 );
 
-Makequesdata(stans,stscore):=Makequesdata(stans,stscore,0);
-Makequesdata(stans,stscore,ctr):=(
+Makequesdata(stans,stscore):=(
   regional(ans,score,tm);
   ans=stans;
   if(!isstring(ans),ans=text(ans));
@@ -168,9 +224,10 @@ Makequesdata(stans,stscore,ctr):=(
   QuesData=QuesDataHead+";;"+ans+";;"+score;
   tm=Counttime()-StartTime;
   QuesData=QuesData+";;"+text(tm);
-  if(ctr>0,
-    QuesData=QuesData+";;"+text(ctr);
+  if(Scorectr>0,
+    QuesData=QuesData+";;"+text(Scorectr);
   );
+  Scorectr=Scorectr+1;
   QuesData;
 );
 
@@ -211,14 +268,6 @@ Updatelog():=(
   LogData;
 );
 
-Drwquesno(pos):=Drwquesno(pos,18,[0,0,0]);
-Drwquesno(pos,size):=Drwquesno(pos,size,[0,0,0]);
-Drwquesno(pos,size,rgb):=(
-  regional(msg);
-  msg=[Assign("N",["N",QuesNo]),pos,size,rgb];
-  msg;
-);
-
 Displetters(msgLorg):=(
   regional(msgL,pos,str,size,color);
   msgL=msgLorg;
@@ -247,6 +296,60 @@ Dispexprs(msgLorg):=(
       drawtext(pos,str,size->size,color->color);
     );
   );
+);
+
+Displetterlist(list):=(
+  forall(list,
+    Displetters(#);
+  );
+);
+
+Dispexprlist(list):=(
+  forall(list,
+    Dispexprs(#);
+  );
+);
+
+Getcurtime():=Getcurtime(date(),time());
+Getcurtime(ymd,hms):=(
+  regional(out,tmp,tmp1);
+  out=text(ymd_1*10000+ymd_2*100+ymd_3);
+  tmp=text(hms_1*3600+hms_2*60+hms_3);
+  tmp1=substring("0000000",0,5-length(tmp));
+  out=out+tmp1+tmp;
+  out;
+);
+
+Counttime():=(
+  regional(tmp,tmp1);
+  tmp=time();
+  tmp_1*3600+tmp_2*60+tmp_3;
+);
+
+Returndatetime(data):=(
+  regional(dstr,dt,tm,tmp);
+  dstr=text(data);
+  dt=substring(dstr,0,8);
+  tmp=substring(dstr,8,length(dstr));
+  tm=Returntime(tmp);
+  [dt,tm];
+);
+
+Returntime(timedata):=(
+  regional(tmp,tmp1,out);
+  tmp=timedata;
+  if(isstring(tmp),tmp=parse(tmp));
+  out=[floor(tmp/3600)];
+  tmp=mod(tmp,3600);
+  out=append(out,floor(tmp/60));
+  tmp=mod(tmp,60);
+  tmp1=append(out,tmp);
+  out="";
+  forall(tmp1,
+    out=out+text(#)+":";
+  );
+  out=substring(out,0,length(out)-1);
+  out;
 );
 
 Log2csv(dt):=(
@@ -292,46 +395,4 @@ Csvtext(fname):=(
   );
   closefile(fid);
   println("generate "+fname+".csv");
-);
-
-Getcurtime():=Getcurtime(date(),time());
-Getcurtime(ymd,hms):=(
-  regional(out,tmp,tmp1);
-  out=text(ymd_1*10000+ymd_2*100+ymd_3);
-  tmp=text(hms_1*3600+hms_2*60+hms_3);
-  tmp1=substring("0000000",0,5-length(tmp));
-  out=out+tmp1+tmp;
-  out;
-);
-
-Counttime():=(
-  regional(tmp,tmp1);
-  tmp=time();
-  tmp_1*3600+tmp_2*60+tmp_3;
-);
-
-Returndatetime(data):=(
-  regional(dstr,dt,tm,tmp);
-  dstr=text(data);
-  dt=substring(dstr,0,8);
-  tmp=substring(dstr,8,length(dstr));
-  tm=Returntime(tmp);
-  [dt,tm];
-);
-
-Returntime(timedata):=(
-  regional(tmp,tmp1,out);
-  tmp=timedata;
-  if(isstring(tmp),tmp=parse(tmp));
-  out=[floor(tmp/3600)];
-  tmp=mod(tmp,3600);
-  out=append(out,floor(tmp/60));
-  tmp=mod(tmp,60);
-  tmp1=append(out,tmp);
-  out="";
-  forall(tmp1,
-    out=out+text(#)+":";
-  );
-  out=substring(out,0,length(out)-1);
-  out;
 );

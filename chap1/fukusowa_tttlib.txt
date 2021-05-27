@@ -50,7 +50,7 @@ Makeques(pos,dy):=(
   msg=[
     [tmp1,pos,24],
     [tmp2,pos-[0,dy],24],
-    ["\alpha+\beta=?",pos-2*[0,dy],24]
+    ["\alpha+\beta=?",pos-2.5*[0,dy],24]
   ];
   pO=[0,0];
   pA=[cL_1,cL_2];
@@ -64,7 +64,8 @@ Makeques(pos,dy):=(
   score=0;
   scorectr=1;
   recordfin=0;
-  [Ex,Ca,msg]
+  Msgques=msg;
+  [Ex,Ca];
 );
 
 Drawfig():=(
@@ -90,7 +91,8 @@ Scoring(pos):=(
   );
   scorefin=1;
   quesnew=1;
-  [stans,score,msg];
+  Msgsc=msg;
+  [stans,score];
 );
 
 scorectr=0;
