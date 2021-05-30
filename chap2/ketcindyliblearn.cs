@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 //
 
-// Library for learning   20210525
+// Library for learning   20210526
 
 // グローバル変数
 // LogData　学習のログデータ
@@ -53,6 +53,36 @@
 // Returntime(data) counttimeのdataから時刻の通常データを返す
 // Returndatetime(data) dataから年月日と時刻の通常データのリストを返す
 // Endquestion(studentans,studentscore) 
+
+/////  template flow ///////////
+//  Id=51; Rec=59;
+//Coorodinates([0.4,-0.1],[0,0.3],[-0.1,-0.4],16);
+//if(newflg==1,
+//  st=Newsession(Id,"",[-4,5.3],24);
+//  quesnew=1;
+//  quesgiven=0;
+//);
+//if(quesflg==1,
+//  if(quesnew==1,
+//    out=Makeques();
+//    Ex=out_1; Ca=out_2;
+//    Startquestion(Ex,Ca);
+//    Subsedit(Rec,"");
+//  );
+//  quesflg=0;
+//);
+//if(scoreflg==1,
+//  out=Scoring([-11,-1],24);
+//  stans=out_1; score=out_2;
+//  Makequesdata(stans,score);
+//  scoreflg=0;
+//);
+//if(recordflg==1,
+//  Updatelog();
+//  Subsedit(Rec,LogData);
+//  recordflg=0;
+//);
+//Displetterlist([Msgnew,Msgsc]);
 
 LogData="";
 QuesDataHead="";
@@ -169,7 +199,6 @@ Newsession(editno,noinput,pos,size,studentL):=(
     if(length(studentL)>0,
       st=Confirmstudent(st,studentL);
       if(length(st)>0,
-        Subsedit(editno,"ID="+st);
         confok=1;
       ,
         msg=["ID?",pos,size,[1,0,0]];
@@ -179,6 +208,7 @@ Newsession(editno,noinput,pos,size,studentL):=(
     );
   );
   if(confok==1,
+    Subsedit(editno,"ID="+st);
     msg=["$\Longleftarrow$",pos,size,[1,0,0]];
     if(confirmflg==1,
       Startlearning(editno);
@@ -205,6 +235,7 @@ Startquestion(question,correct):=(
   StartTime=Counttime();
   QuesNo=QuesNo+1; //210424
   Msgnew=Dispquesno(Posnew,Sizenew,[0,0,0]);
+  Msgsc=[];
   no=text(QuesNo);
   Scorectr=1;
   ex=question;
@@ -212,6 +243,10 @@ Startquestion(question,correct):=(
   ca=correct;
   if(!isstring(ca),ca=text(ex));
   QuesDataHead=no+";;"+ex+";;"+ca;
+  quesgiven=1;
+  graphflg=0;
+  quesnew=0;
+  scorefin=0;
   QuesDataHead;
 );
 
@@ -227,6 +262,8 @@ Makequesdata(stans,stscore):=(
   if(Scorectr>0,
     QuesData=QuesData+";;"+text(Scorectr);
   );
+  quesnew=1;
+  scorefin=1;
   Scorectr=Scorectr+1;
   QuesData;
 );
