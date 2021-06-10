@@ -1,5 +1,7 @@
+Id=60;
+Rec=50;
+
 Seteditable(60,["ID=","Size=18","Width=150"]);// no ketjs
-//Seteditable(11,["","Size=18","Width=800"]);// no ketjs
 Seteditable(50,["","Size=18","Width=700"]);// no ketjs
 
 Coordinates():=(

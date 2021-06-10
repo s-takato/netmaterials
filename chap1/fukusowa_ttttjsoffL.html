@@ -1700,6 +1700,9 @@ Csvtext(fname):=(
   closefile(fid);
   println("generate "+fname+".csv");
 );
+Id=60;
+Rec=50;
+
 
 Coordinates():=(
   regional(tmp);
@@ -1808,7 +1811,7 @@ Setwindow([-5,5],[-5,5]);
 Coorodinates([0.4,-0.1],[0,0.3],[-0.1,-0.4],16);
 
 if(newflg==1,
-  st=Newsession(60,"",[-8.7,4.7],24);
+  st=Newsession(Id,"",[-8.7,4.7],24);
 );
 
 if((quesflg==0)&(quesnew==1),
@@ -1817,6 +1820,7 @@ if((quesflg==0)&(quesnew==1),
 
 if(quesflg==1,
   if(quesnew==1,
+    Subsedit(Rec,"");
     out=Makeques([-11,2],1.2);
     Ex=out_1; Ca=out_2;
     Msgsc=[];
@@ -1849,7 +1853,7 @@ if(score==1,
 
 if(recordflg==1,
   if(scorefin==1,
-    Subsedit(50,LogData);
+    Subsedit(Rec,LogData);
     quesnew=1;
     recordflg=0;
   );
@@ -1891,8 +1895,8 @@ var cdy = CindyJS({
   ports: [{
     id: "CSCanvas",
     width: 819,
-    height: 476,
-    transform: [{visibleRect: [-16.391260316163322, 6.889523208378059, 8.630999141316194, -7.653328442122856]}],
+    height: 460,
+    transform: [{visibleRect: [-16.391260316163322, 6.889523208378059, 8.630999141316194, -7.164493092526186]}],
     grid: 1.0,
     background: "rgb(247,247,247)"
   }],
