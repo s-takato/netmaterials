@@ -1,0 +1,87 @@
+Deformtex(frm):=(
+  regional(tmp,tfrm);
+  tmp=replace(frm,"*","");
+  tmp=replace(tmp,"+-","-");
+  tmp=replace(tmp,"+0x^2","");
+  tmp=replace(tmp,"1x^2","x^2");
+  tmp=replace(tmp,"+0x","");
+  tmp=replace(tmp,"1x","x");
+  tmp=replace(tmp,"+1x","+x");
+  tmp=replace(tmp,"+0","");
+  tfrm=Totexform(tmp);
+  tfrm;
+);
+
+Makeques(pQ,size,color):=(
+  regional(a1,a2,a3,b,c,d,eq1,
+      Ex,Ca,msg,flg,frm,cfrm,tmp);
+  // global Scorectr
+  a1=0; a2=0; a3=0;
+  frm="";
+  a1=4-randomint(8);
+  a2=4-randomint(8);
+  a3=4-randomint(7);
+  b=-(a1+a2+a3);
+  c=a1*a2+a2*a3+a3*a1;
+  d=-a1*a2*a3;
+  eq1=Assign("x^3+b*x^2+c*x+d=0",["b",b,"c",c,"d",d]);
+  frm=Assign("x^3+b*x^2+c*x+d=0",
+       ["b",text(b),"c",text(c),"d",text(d)]);
+  cfrm=Tocindyform(frm);
+  cfrm=replace(cfrm,"+-","-");
+  forall(Que, Subsedit(#,""));
+  tfrm=Deformtex(frm);
+  msg=[
+    ["$"+tfrm+"$",pQ,20],
+    ["解$x$は",pQ+[0.2,-1],20]
+  ];
+  Msghint=[];
+  Msgsc=[];
+  Scorectr=1;
+  quesgiven=1;
+  quesnew=0;
+  tipsflag=0;
+  Ex=cfrm;
+  tmp=sort([a1,a2,a3]);
+  Ca=text(tmp);
+  [Ex,Ca,msg];
+);
+
+Scoring(Ca,pos):=(
+  regional(st,stans,score,tmp,tmp1);
+  tmp=[];
+  forall(Que,
+    tmp1=textedit(#,"");
+    tmp=append(tmp,tmp1);
+  );
+  stans=text(tmp);
+  if(length(tmp_1)*length(tmp_2)*length(tmp_3)>0,
+    tmp=apply(tmp,parse(#));
+    tmp=sort(tmp);
+    st=text(tmp);
+    if(Ca==st,
+      score=1;
+      Msgsc=["正解",pos,20,[0,0,0]];
+    ,
+      score=0;
+      Msgsc=["不正解",pos,20,[1,0,0]];
+    );
+  ,
+    score=-1;
+    Msgsc=["未入力",pos,20,[0,0,1]];
+  );
+  [stans,score];
+);
+
+Drawgraph(Ex,pos,size):=(
+  regional(fun,tmp);
+  tmp=Strsplit(Ex,"=");
+  fun=tmp_1;
+  Plotdata("1",fun,"x",["Color=blue"]);
+  fun=Deformtex(fun);
+  Drwexpr(pos,"y="+fun,size);
+);
+
+
+frm="";
+cfrm="";

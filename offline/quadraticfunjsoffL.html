@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     
-    <title>quadraticeq.cdy</title>
+    <title>quadraticfun.cdy</title>
     <style type="text/css">
         * {
             margin: 0px;
@@ -1939,6 +1939,18 @@ Startlearning(editno):=(
   LogData;
 );
 
+Blink(posdata):=(
+  regional(p1,p2,q,fr);
+  p1=posdata_1; p2=posdata_2;
+  q=posdata_3*[1,1];
+  p1=p1-q; p2=p2+q;
+  fr=[p1,[p2_1,p1_2],p2,[p1_1,p2_2],p1];
+  drawpoly(fr,color->[1,0,0]);
+  p1=p1-0.2*q; p2=p2+0.2*q;
+  fr=[p1,[p2_1,p1_2],p2,[p1_1,p2_2],p1];
+  drawpoly(fr,color->[1,0,0]);
+);
+
 Newsession(editno,pos):=Newsession(editno,"",pos,18,[]);
 Newsession(editno,Arg1,Arg2):=(
   if(islist(Arg1),
@@ -1955,7 +1967,7 @@ Newsession(editno,Arg1,Arg2,Arg3):=(
   );  
 );
 Newsession(editno,noinput,pos,size,studentL):=(
-  regional(st,msg,confok);
+  regional(st,msg,confok,ctr);
   Posnew=pos;
   Sizenew=size;
   confok=0;
@@ -1975,12 +1987,22 @@ Newsession(editno,noinput,pos,size,studentL):=(
       confok=1;
     );
   );
+  ctr=1;
+  while((confok==0)&(ctr<10),
+    Blink(Posid);
+    ctr=ctr+1;
+  );
   if(confok==1,
     Subsedit(editno,"ID="+st);
-    msg=["$\Longleftarrow$",pos,size,[1,0,0]];
+    msg=["$\Leftarrow$",pos,size,[1,0,0]];
+    ctr=1;
+    while((confirmflg==0)&(ctr<5),
+      Blink(Poscon);
+      ctr=ctr+1;
+    );
     if(confirmflg==1,
       Startlearning(editno);
-      msg=["$\Longrightarrow$",pos,size,[1,0,0]];
+      msg=["$\Rightarrow$",pos,size,[1,0,0]];
       quesnew=1;
       quesgiven=0;
       newflg=0;
@@ -2199,6 +2221,8 @@ Csvtext(fname):=(
   closefile(fid);
   println("generate "+fname+".csv");
 );
+Id=51;
+Rec=59;
 
 
 
@@ -2239,8 +2263,11 @@ Makeques(pos,size,clr):=( ////問題作成の命令．figureコンソールに�
   pT=T.xy;
   Msgques=[
     ["$y="+tfrm+"$",pos,size,clr],
-    ["頂点を求めてTを移動する",pos+[0,-1],size,clr],
-    ["今のTの座標は",pos+[0,-2],size,clr]
+    ["頂点を求めて",pos+[0,-1],size,clr],
+    ["Tを頂点に移動",pos+[0,-2],size,clr],
+    ["今のTの座標は",pos+[0,-3],size,clr],
+    ["("+text(T.x)+", "+text(T.y)+")",pos+[2,-4],size,clr],
+    ["他の点もグラフ上に移動",pos+[0,-5],size,clr]
   ];
   Ex="y="+tfrm;
   Ca=text([p1,q1]);
@@ -2333,6 +2360,12 @@ Msg0=[];
 Msghj=[];
 Msg1=[];Msg2=[];
 graphflg=0;
+
+Posid=[[-11.9,5.1],[-5.9,6],0.15];
+Poscon=[[-5.5,5.1],[-4.3,6],0.15];
+Posque=[[-2.9,5.1],[-1.7,6],0.15];
+
+;
 </script>
 <script id="csdraw" type="text/x-cindyscript">
 Ketinit();
@@ -2343,13 +2376,15 @@ Coorodinates([0.4,-0.1],[0,0.3],[-0.1,-0.4],16);
 
 if(newflg==1,
   st=Newsession(51,"",[-4,5.3],24);
-  quesnew=1;
-  quesgiven=0;
+);
+
+if((quesflg==0)&(quesnew==1),
+  Blink(Posque);
 );
 
 if(quesflg==1,
   if(quesnew==1,
-    out=Makeques([-11,4],20,[0,0,0]);
+    out=Makeques([-12,4],20,[0,0,0]);
     Ex=out_1; Ca=out_2;
     Startquestion(Ex,Ca);
     Subsedit(59,"");
@@ -2360,13 +2395,8 @@ if(quesflg==1,
 );
 
 
-if(quesgiven==1,
-  tmp="("+text(T.x)+", "+text(T.y)+")";
-  Msg1=[tmp,[-9,0.5],28];
-);
-
 if(scoreflg==1,
-  out=Scoring([-8,-2],24);
+  out=Scoring([-8,-2.5],24);
   stans=out_1; score=out_2;
   Makequesdata(stans,score);
   scoreflg=0;
@@ -2384,7 +2414,7 @@ if(recordflg==1,
 
 Ospline("1",[P1,P2,T,P3,P4]);
 
-Displetterlist([Msgnew,Msgques,Msgsc,Msghj,Msg1]);
+Displetterlist([Msgnew,Msgques,Msgsc,Msghj]);
 
 Windispg();
 ;
@@ -2412,15 +2442,15 @@ var cdy = CindyJS({
     {name: "Text51", type: "EditableText", pos: [4.0, -1.8009950248756217, -0.337810905880613], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 200, text: "ID=", textsize: 20.0},
     {name: "Text59", type: "EditableText", pos: [4.0, 2.8, -0.4], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 1.0, minwidth: 500, textsize: 18.0},
     {name: "Text15", type: "Button", pos: [2.10989010989011, -4.0, -0.7461537591428926], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.5, script: "quesflg=1;", text: "出題", textsize: 18.0},
-    {name: "Text16", type: "Button", pos: [4.0, 0.8580060422960725, -0.410271855480382], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.5, script: "scoreflg=1;", text: "採点", textsize: 18.0},
+    {name: "Text16", type: "Button", pos: [4.0, 1.0090090090090091, -0.4078077602522716], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.5, script: "scoreflg=1;", text: "採点", textsize: 18.0},
     {name: "Text0", type: "Button", pos: [4.0, 2.4264264264264264, -0.4078077602522716], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.5, script: "recordflg=1;", text: "記録", textsize: 18.0},
     {name: "Text17", type: "Button", pos: [4.0, -3.9782608695652177, -0.7380433921956873], color: [0.0, 0.0, 0.0], fillcolor: [1.0, 1.0, 1.0], fillalpha: 0.5, script: "confirmflg=1;", text: "確認", textsize: 18.0}
   ],
   ports: [{
     id: "CSCanvas",
-    width: 803,
-    height: 539,
-    transform: [{visibleRect: [-13.298970622992732, 7.61413932678543, 10.353462179362005, -8.262151184384189]}],
+    width: 782,
+    height: 526,
+    transform: [{visibleRect: [-13.328425707429039, 6.966127469186669, 9.705450321763246, -8.527246944310955]}],
     grid: 1,
     snap: true,
     background: "rgb(247,247,247)"

@@ -14,7 +14,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 //
 
-println("ketcindylibforjs[20210518] loaded");
+println("ketcindylibkey[20210606] loaded");
+
+// 210606 Replacematdet,Extractvar added
+// 210604 Replacefun, Morefunctions added
+//              Modifyfortex changed ( (inf) added )
 // 210515 start
 
 ch=0;
@@ -31,13 +35,157 @@ npos=0;
 Modifyfortex(str):=(
   regional(rep1L,rep2L,nn,tmp,tmp1,out);
   rep1L=["(sp)","(cross)","(cdot)","(deg)","(neq)",
-         "(geq)","(leq)","(pm)","(mp)"];
-  rep2L=["\;","\times ","\cdot ","^{\circ} ","\neq ",
-         "\geq ","\leq ","\pm ","\mp "];
+         "(geq)","(leq)","(pm)","(mp)","(inf)"];
+  rep2L=["\;","{\times}\,","{\cdot}\,","^{\circ}\,","{\neq}\,",
+         "{\geq}\,","{\leq}\,","{\pm}\,","{\mp}\,","{\infty}\,"];
   out=str;
   forall(1..(length(rep1L)),nn,
     out=replace(out,rep1L_nn,rep2L_nn);
   );
+  out;
+);
+
+Replacefun(str,name,repL):=(  //new 210604
+  regional(out,sub,pre,post,comL,ctr,lev,nn,
+     tmp,tmp1,tmp2);
+  out=str;
+  pre=""; post=""; sub="";
+  tmp=indexof(out,name);
+  ctr=1;
+  while((tmp>0)&(ctr<50),
+    pre=substring(out,0,tmp-1);
+    sub=substring(out,tmp+2,length(out));
+    tmp1=Bracket(sub,"()");
+    tmp1=select(tmp1,#_2==-1);
+    tmp1=tmp1_1_1;
+    post=substring(sub,tmp1,length(out));
+    sub=substring(sub,0,tmp1);
+    tmp1=Bracket(sub,"()");
+    tmp2=Indexall(sub,",");
+    comL=[1];
+    forall(tmp2,nn,
+      lev=select(tmp1,#_1<nn);
+      lev=lev_(-1);
+      if((lev_2==1)%(lev_2==-2),
+        comL=append(comL,nn);
+      );
+    );
+    comL=append(comL,length(sub));
+    if(length(comL)==length(repL),
+      out=repL_1;
+      tmp1=comL_1;
+      forall(2..(length(comL)),
+        tmp2=substring(sub,tmp1,comL_#-1);
+        out=out+tmp2;
+        out=out+repL_#;
+        tmp1=comL_#;
+      );
+    ,
+      tmp1=replace(name,"(","");
+      pre=pre+tmp1+sub;
+      out="";
+    );
+    ctr=ctr+1;
+    tmp=indexof(out,name);
+  );
+  out=pre+out+post;
+  out;
+);
+
+Extractvar(strorg):=Extractvar(strorg,",");
+Extractvar(strorg,mark):=(
+  regional(out,parL,str,cma,nc,first,last,
+     tmp,tmp1,tmp2);
+  str=strorg;
+  out=[];
+  first=0; last=0;
+  parL=Bracket(str,"()");
+  tmp1=select(parL,#_2==1);
+  tmp2=select(parL,#_2==-1);
+  if(length(tmp1)*length(tmp2)>0,
+    first=tmp1_1_1;
+    last=tmp2_1_1;
+    str=substring(str,0,last);
+    cma=Indexall(str,mark);
+    parL=select(parL,#_1<=last);
+    if(length(cma)==0,
+      out=[substring(str,first,last-1)];
+    ,
+      tmp1=first;
+      forall(1..(length(cma)),nc,
+        tmp=select(parL,#_1<cma_nc);
+        tmp=tmp_(-1)_2;
+        if(tmp>0,tmp=tmp,tmp=-tmp-1);
+        if(tmp==1,
+          tmp2=cma_(nc)-1;
+          out=append(out,substring(str,tmp1,tmp2));
+          tmp1=tmp2+1;
+          if(nc==length(cma),
+            out=append(out,substring(str,tmp1,length(str)-1));
+          );
+        );
+      );
+    );
+  );
+  [first,last,out];
+);
+
+Replacematdet(str):=(
+  regional(sym,out,rest,ctr,eL,np,nc,tmp,tmp1,tmp2,tmp3);
+  out=str;
+  forall(["mat(","det("],sym,
+    tmp=indexof(out,sym);
+    ctr=0;
+    while((tmp>0)&(ctr<20),
+      rest=substring(out,tmp-1,length(out));
+      out=substring(out,0,tmp-1);
+      tmp1=Bracket(rest,"()");
+      tmp1=select(tmp1,#_2==-1);
+      if(length(tmp1)>0,tmp1=tmp1_1_1,tmp1=length(rest));
+      tmp2=substring(rest,0,tmp1);
+      rest=substring(rest,tmp1,length(rest));
+      eL=Extractvar(tmp2,";");
+      tmp3=eL_3;
+      forall(1..(length(tmp3)),np,
+        tmp=tmp3_np;
+        tmp1=Getlevel(tmp);
+        tmp1=select(tmp1,#_2==0);
+        tmp1=apply(tmp1,#_1);
+        nc=length(tmp1)+1;
+        forall(tmp1,
+          tmp_#="&";
+        );
+        tmp3_np=tmp;
+      );
+      tmp2="\begin{array}{";
+      forall(1..nc,tmp2=tmp2+"c");
+      tmp2=tmp2+"}";
+      forall(tmp3,tmp2=tmp2+#+"\\");
+      tmp2=substring(tmp2,0,length(tmp2)-2);
+      tmp2=tmp2+"\end{array}";
+      if(sym=="mat(",
+        tmp2="\left("+tmp2+"\right)";
+      );
+      if(sym=="det(",
+        tmp2="\left|"+tmp2+"\right|";
+      );
+      out=out+tmp2+rest;
+      tmp=indexof(out,sym);
+      ctr=ctr+1;      
+    );
+  );
+  out;
+);
+
+Morefunction(str):=( //new 210604
+  regional(out,name,repL);
+  out=str;
+  out=Replacefun(out,"tfr(",["\tfrac{","}{","}"]);
+  out=Replacefun(out,"lim(",["\displaystyle\lim_{","\to\,","}",""]);
+  out=Replacefun(out,"int(",["\displaystyle\int_{","}^{","}","\,d"," "]);
+  out=Replacefun(out,"int(",["\displaystyle\int\,","\,d"," "]);
+  out=Replacefun(out,"sum(",["\displaystyle\sum_{","}^{","}{","}"]); //210606
+  out=Replacematdet(out); //210606
   out;
 );
 
@@ -289,8 +437,11 @@ Gettexform(str):=(
       tmp=#;
       tmp=replace(#," ","(sp)");
       tmp=Modifyfortex(tmp);
+      tmp=Morefunction(tmp);
       tmp=Addasterisk(tmp);
       tmp1=Totexform(tmp);
+      tmp1=replace(tmp1,"a r r a y","array"); //210606[2lines]
+      repeat(5,tmp1=replace(tmp1,"c c","cc"));
       tmp1=replace(tmp1,"c i r c","\circ");
       tmp1=replace(tmp1,"\frac","\dfrac");
       tmp1=Greekletter(tmp1); //210514[3lines]
@@ -302,27 +453,22 @@ Gettexform(str):=(
   strt;
 );
 
-Dispposition(posline,npos,str):=(
-  regional(tmp,tmp1,tmp2,dp,p1,p2);
-  dp=[0,1];
-  p1=posline+dp;  p2=posline-dp;
-  Listplot("disp1",[p1,p2],["Color=blue"]);
-  tmp=[0.2,0];
-  p1=posline+dp+tmp;  p2=posline-dp+tmp;
-  Listplot("disp1",[p1,p2],["Color=blue"]);
+Dispposition(pos,npos,str):=(
+  regional(tmp,tmp1,tmp2,dp,p1,p2,p3,p4);
+  dp=[0,3];
+  tmp=[0.1,0];
+  p1=pos-tmp;  p2=pos+tmp;
+  p3=p1+dp; p4=p2+dp;
+  Listplot("-disp",[p1,p2,p4,p3,p1],["nodisp"]);
+  Shade(["disp"],["Color=red"]);
   if(length(str)>0,
-    if(npos==0,tmp1="";tmp2=str_1);
-    if(npos>0,
-      tmp1=str_(npos); tmp2="";
-      if(npos<length(str),
-        tmp2=str_(npos+1);
-      );
-    );
-    dp=0.5*dp;
-    p1=posline-dp-[1.1,0];
-    p2=posline-dp+[0.5,0];
-    Drwletter(p1,tmp1,24);
-    Drwletter(p2,tmp2,24);
+    tmp=max([0,npos-4]);
+    tmp1=substring(str,tmp,npos);
+    tmp=min([length(str),npos+4]);
+    tmp2=substring(str,npos,tmp);
+    p1=pos+1/3*dp;
+    drawtext(p1,tmp1,size->24,align->"right");
+    drawtext(p1,tmp2,size->24,align->"left");
   );
 );
 
@@ -342,9 +488,12 @@ Keytable(nx,dx,ny,dy,plb,clr):=(
   xL=apply(0..nx,#/10*dx);
   yL=apply(0..ny,#/10*dy);
   plt=plb+[0,yL_(-1)]; prt=plt+[xL_(-1),0]; prb=prt-[0,yL_(-1)];
-  fillpoly([plb,plt,prt,prb,plb],color->clr);
+  fillpoly([plb,plt,prt,prb,plb],color->clr,alpha->1);
   forall(xL,draw([plb_1+#,plb_2],[plb_1+#,plt_2],color->[0,0,0]));
   forall(yL,draw([plb_1,plb_2+#],[prb_1,plb_2+#],color->[0,0,0]));
+  xL=apply(xL,plb_1+#);
+  yL=apply(yL,plb_2+#);
+  [xL,dx/10,yL,dy/10];
 );
 
 Allclear():=(
